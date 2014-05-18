@@ -1,0 +1,34 @@
+diff --git a/klink.c b/klink.c
+index 1e20760..31bd792 100644
+--- a/klink.c
++++ b/klink.c
+@@ -7736,7 +7736,7 @@ _klink_error_1 (klink * sc, const char *s, pko a)
+ 	err_arg = K_NIL;
+       }
+     err_arg = mcons (err_string, err_arg);
+-    invoke_continuation (sc, sc->error_continuation, err_arg);
++    continue_abnormally (sc, sc->error_continuation, err_arg);
+   }
+   /* NOTREACHED */
+   return;
+@@ -7801,7 +7801,7 @@ DEF_CFUNC(ps0a1,kernel_err_return, K_ANY,0)
+ DEF_APPLICATIVE_W_DESTR(ps0a1,error,K_ANY,0,ground,"error")
+ {
+   WITH_1_ARGS(err_arg);
+-  invoke_continuation (sc, sc->error_continuation, err_arg);
++  continue_abnormally (sc, sc->error_continuation, err_arg);
+   return 0;			/* NOTREACHED */
+ }
+ /*_    . error-descriptor? */
+diff --git a/makefile b/makefile
+index c124e07..3eb8a2b 100644
+--- a/makefile
++++ b/makefile
+@@ -18,6 +18,7 @@
+ #AR= echo
+ 
+ # Unix, generally 
++CFLAGS = "-DGC_PTR=void *"
+ CC = gcc -fpic $(CFLAGS)
+ DEBUG=-g -Wall -Wno-char-subscripts -O 
+ Osuf=o 

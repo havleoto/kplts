@@ -1,0 +1,6 @@
+KPLTS TODO
+==========
+
+  - remove hardcoded paths in run/*.sh
+  - make working with icbink
+  - implement all tests
