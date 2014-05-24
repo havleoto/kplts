@@ -19,14 +19,26 @@
 ;;;     Evaluate FORM in the dynamic environment and record the result
 ;;;     in the current test group.
 ;;;
-;;;   ($check FORM ...)
+;;;   ($check EQV? FORM-1 FORM-2)
 ;;;
-;;;     TODO
+;;;     Evaluate FORM-1 and FORM-2 in the dynamic environment and
+;;;     compare using the binary predicate EQV?. Record the result
+;;;     in the current test group.
 ;;;
 ;;;   ($eval-table (SUT REF) ...)
 ;;;
 ;;;     Evaluate SUT and REF in a standard environment. Pass if the
 ;;;     results are equal?, fail otherwise.
+;;;
+;;;   ($check-effects EXPR LOG)
+;;;
+;;;     Check order of side effects in EXPR. Evaluate EXPR in
+;;;     a standard environment extended with an applicative named |eff|.
+;;;
+;;;       (eff LOG-VALUE RETURN-VAL) => RETURN-VALUE
+;;;
+;;;     Ignore the result of evaluation and compare LOG with a list
+;;;     of LOG-VALUEs passed to (eff ...).
 ;;;
 
 ($provide! (event-return event-error event-exit
@@ -90,3 +102,15 @@
                  (ref (eval-protect expected-result env)))
             (test-result! #ignore (equal? sut ref) expression)))
         items))))
+
+($define! $check-effects
+  ($vau (expression expected-effects) denv
+    ($letrec ((exec-env (make-kernel-standard-environment))
+              (log      ())
+              (log-env  (get-current-environment)))
+      ($set! exec-env eff
+        ($lambda (log-value return-value)
+          ($set! log-env log (cons log-value log))
+          return-value))
+      (eval-protect expression exec-env) ; ignore result
+      (test-result! #ignore (equal? (reverse log) expected-effects) expression))))
