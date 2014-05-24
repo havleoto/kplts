@@ -31,6 +31,6 @@
         ($lambda (((p . xs) (q . #ignore)))
           (for-each
             ($lambda (x)
-              ($check eq? (apply q (list x)) (equal? p q)))
+              ($check equal? (apply q (list x)) (equal? p q)))
             xs))
         (list-product types types))))

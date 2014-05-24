@@ -87,8 +87,8 @@
         ($define! (xe xr) (eval-protect x denv))
         ($define! (ye yr) (eval-protect y denv))
         (test-result! #ignore
-                      ($and? (eq? event-return xe)
-                             (eq? event-return ye)
+                      ($and? (equal? event-return xe)
+                             (equal? event-return ye)
                              ((eval eqv? denv) xr yr))
                       eqv? x y
                       (list xe xr)
