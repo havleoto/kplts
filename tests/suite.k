@@ -20,13 +20,14 @@
   ;;
   ($test-group kernel-concepts
       ((plan references
-             environments
+             environment-concepts
              evaluator
              types
              cyclic-references
              tail-recursion)
        (cite (kernel-report 3)))
     (load "types.k")
+    (load "environment-concepts.k")
     (load "tail-recursion.k"))
   ;;
   ;; Ten core modules [KR, sections 4-6].
