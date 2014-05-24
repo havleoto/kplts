@@ -55,6 +55,7 @@
 
 (load "../support/utils.k")
 (load "../support/checks.k")
+(load "../support/fuzz.k")
 (load "../support/hierarchy.k")
 (load "../support/random.k")
 

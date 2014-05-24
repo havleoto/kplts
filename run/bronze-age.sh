@@ -17,5 +17,6 @@ cd tests
 bronze-devel \
   -l ../run/bronze-age-compatibility.k \
   -l ../support/utils.k -l ../support/random.k \
-  -l ../support/checks.k -l ../support/hierarchy.k \
+  -l ../support/checks.k -l ../support/fuzz.k \
+  -l ../support/hierarchy.k \
   suite.k

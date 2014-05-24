@@ -12,10 +12,15 @@
        (require-standard-bindings not?)
        (plan normal-operation error-handling))
     ($test-group normal-operation
-      ((number 2))
+        ((number 2))
       ($eval-table
         ((not? #f) #t)
-        ((not? #t) #f))))
+        ((not? #t) #f)))
+    ($test-group error-handling
+        ((number 20))
+      ($fuzz-applicative 20 not?
+        ($lambda (x) ($and? (pair? x) (null? (cdr x)) (boolean? (car x))))
+        (#f))))
 
   ($test-group and?
       ((cite (kernel-report 6 1 2))
@@ -30,7 +35,15 @@
         ((and? #t #t) #t)
         ((and? #t #f) #f)
         ((and? #f #t) #f)
-        ((and? #f #f) #f))))
+        ((and? #f #f) #f)))
+    ($test-group error-handling
+        ((number 20))
+      ($fuzz-applicative 20 and?
+        ($lambda (x) ($and? (finite-list? x) (apply boolean? x)))
+        ()
+        (#t)
+        (#t #t)
+        (#t #t #t))))
 
   ($test-group or?
       ((cite (kernel-report 6 1 3))
@@ -45,7 +58,15 @@
         ((or? #t #t) #t)
         ((or? #t #f) #t)
         ((or? #f #t) #t)
-        ((or? #f #f) #f))))
+        ((or? #f #f) #f)))
+    ($test-group error-handling
+        ((number 20))
+      ($fuzz-applicative 20 and?
+        ($lambda (x) ($and? (finite-list? x) (apply boolean? x)))
+        ()
+        (#t)
+        (#t #t)
+        (#t #t #t))))
 
   ($test-group $and?
       ((cite (kernel-report 6 1 4))
