@@ -94,6 +94,11 @@
                       (list xe xr)
                       (list ye yr))))))
 
+($define! $check-error
+  ($vau expr denv
+    ($define! (xe xr) (eval-protect expr denv))
+    (test-result! #ignore (equal? event-error xe) expr xr)))
+
 ($define! $eval-table
   ($vau items denv
     ($let ((env (make-kernel-standard-environment)))

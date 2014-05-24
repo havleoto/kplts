@@ -57,7 +57,7 @@
 
 ($define! positive?
   ($lambda xs
-    (apply <=? (cons 0 xs))))
+    (apply <? (cons 0 xs))))
 
 ($define! append
   ($lambda xs
@@ -68,6 +68,16 @@
         (apply append (cdr xs)))
       (#t
         (cons (caar xs) (apply append (cons (cdar xs) (cdr xs))))))))
+
+($define! member?
+  ($lambda (x xs)
+    ($or? (null? xs)
+          (equal? x (car xs))
+          (member? x (cdr xs)))))
+
+($define! $remote-eval
+  ($vau (o e) d
+    (eval o (eval e d))))
 
 ;;
 ;; Definition of guard-dynamic-extent from Kernel Report does not seem to work

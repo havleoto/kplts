@@ -38,7 +38,13 @@
 
 ($define! positive?
   ($lambda xs
-    (apply <=? (cons 0 xs))))
+    (apply <? (cons 0 xs))))
+
+($define! member?
+  ($lambda (x xs)
+    ($or? (null? xs)
+          (equal? x (car xs))
+          (member? x (cdr xs)))))
 
 ;;
 ;;

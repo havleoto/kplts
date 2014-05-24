@@ -1,6 +1,8 @@
 KPLTS TODO
 ==========
 
+  - how to test error messages and irritant lists?
+  - test cyclic argument lists
   - remove hardcoded paths in run/*.sh
   - better compensate for different speeds of different interpreters
     in stress-like tests (appropriate-number-of-calls)

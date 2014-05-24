@@ -92,7 +92,12 @@
         (1 2))
       ($check-effects
         ($and? (eff 1 #t) (eff 2 #t) (eff 3 #f) (eff 4 #t))
-        (1 2 3))))
+        (1 2 3)))
+    ($test-group error-handling
+        ((number 3))
+      ($check-error ($and? . #t))
+      ($check-error ($and? #t . #t))
+      ($check-error ($and? 1))))
 
   ($test-group $or?
       ((cite (kernel-report 6 1 5))
@@ -118,4 +123,12 @@
         (1))
       ($check-effects
         ($or? (eff 1 #f) (eff 2 #f) (eff 3 #t) (eff 4 #t))
-        (1 2 3)))))
+        (1 2 3)))
+    ($test-group error-handling
+        ((number 3))
+      ($check-error ($or? . #t))
+      ($check-error ($or? #f . #f))
+      ($check-error ($or? 1)))
+    ($test-group robust-error-handling
+        ((number 1))
+      ($check-error ($or? #t 0)))))

@@ -52,6 +52,7 @@
           (path ())
           (globals globals)
           (results (make-environment))
+          (ran ())
           (local-pass-counter 0)
           (local-fail-counter 0))
         ($lambda ()
@@ -76,6 +77,7 @@
                 (path (cons name path))
                 (globals globals)
                 (results (make-environment))
+                (ran ())
                 (local-pass-counter 0)
                 (local-fail-counter 0))))
           (bind-current-test
@@ -114,7 +116,7 @@
       (cite no-op)
       (plan ($vau args denv
               ($define! our (access-current-test))
-              ($import! our results path)
+              ($import! our results path ran)
               ($set! our summary
                 (apply and?
                   (map
@@ -124,7 +126,12 @@
                              (#t
                                (test-print "Warning:" subtest "not tested!")
                                #f)))
-                    args)))))
+                    args)))
+              (for-each
+                ($lambda (subtest)
+                  ($when ($and? (symbol? subtest) (not? (member? subtest args)))
+                    (test-print "Warning:" subtest "tested but not planned!")))
+                ran)))
       (number ($lambda (n)
                 ($define! our (access-current-test))
                 ($import! our local-pass-counter local-fail-counter)
@@ -143,9 +150,10 @@
   ($define! test-result!
     ($lambda (test-id result . rest)
       ($define! current-test (access-current-test))
-      ($import! current-test path globals results)
+      ($import! current-test path globals results ran)
       ($when (symbol? test-id)
-        (set! results test-id result))
+        (set! results test-id result)
+        ($set! current-test ran (cons test-id ran)))
       ($cond
         ((equal? result #t)
           ($increment! current-test local-pass-counter)
