@@ -4,9 +4,6 @@
 ;;; Compatibility layer for Bronze Age Lisp. See also bronze-age.sh.
 ;;;
 
-($unless ($binds? (get-current-environment) binds?)
-  ($define! binds? (wrap $binds?)))
-
 ($define! test-print
   ($lambda args
     (for-each
@@ -22,3 +19,5 @@
             (display x))))
       args)
     (newline)))
+
+($define! appropriate-number-of-calls 10000)

@@ -26,7 +26,8 @@
              cyclic-references
              tail-recursion)
        (cite (kernel-report 3)))
-    (load "types.k"))
+    (load "types.k")
+    (load "tail-recursion.k"))
   ;;
   ;; Ten core modules [KR, sections 4-6].
   ;;

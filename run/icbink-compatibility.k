@@ -119,17 +119,9 @@
   (wrap ($vau args denv
     (eval (cons + args) denv))))
 
-($define! $quote
-  ($vau (x) #ignore x))
-
-($define! set!
-  ($lambda (env lhs rhs)
-    (eval (list $define! lhs (list $quote rhs)) env)))
-
-($define! binds?
-  (wrap $binds?))
-
 ($define! test-print println)
+
+($define! appropriate-number-of-calls 1000)
 
 (load "../support/utils.k")
 (load "../support/checks.k")

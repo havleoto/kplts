@@ -2,5 +2,7 @@ KPLTS TODO
 ==========
 
   - remove hardcoded paths in run/*.sh
+  - better compensate for different speeds of different interpreters
+    in stress-like tests (appropriate-number-of-calls)
   - make working with icbink
   - implement all tests

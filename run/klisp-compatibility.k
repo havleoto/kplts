@@ -11,12 +11,4 @@
       args)
     (newline)))
 
-($define! $quote
-  ($vau (x) #ignore x))
-
-($define! set!
-  ($lambda (env lhs rhs)
-    (eval (list $define! lhs (list $quote rhs)) env)))
-
-($define! binds?
-  (wrap $binds?))
+($define! appropriate-number-of-calls 10000)

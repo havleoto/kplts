@@ -62,7 +62,7 @@
         (($and? #f #t) #f)
         (($and? #f #f) #f)))
     ($test-group short-circuit
-        (cite (kernel-report 6 1 4)
+        ((cite (kernel-report 6 1 4)
               "If an operand evaluates to false, no further operand
                evaluations are performed, and the operative returns false.")
          (number 2))
