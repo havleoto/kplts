@@ -25,9 +25,9 @@
 
 ($define! $let-redirect
   ($vau (exp bindings . body) env
-    (eval (list* (eval (list* $lambda (map1 car bindings) body)
+    (eval (list* (eval (list* $lambda (map car bindings) body)
                        (eval exp env))
-                 (map1 cadr bindings))
+                 (map cadr bindings))
           env)))
 
 ($define! $bindings->environment
@@ -59,11 +59,6 @@
   ($lambda xs
     (apply <=? (cons 0 xs))))
 
-;;
-;; map does not work?
-;;
-($define! map map1)
-          
 ($define! append
   ($lambda xs
     ($cond
@@ -125,6 +120,7 @@
 
 (load "../support/utils.k")
 (load "../support/checks.k")
+(load "../support/fuzz.k")
 (load "../support/hierarchy.k")
 (load "../support/random.k")
 (load "suite.k")
