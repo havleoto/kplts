@@ -69,6 +69,11 @@
 
   ($define! fuzz-applicative
     ($lambda (count f valid-ptree? input-samples)
+      ($unless ($and? (positive? count)
+                      (applicative? f)
+                      (applicative? valid-ptree?)
+                      (positive? (length input-samples)))
+        (error "fuzz-applicative: Invalid arguments." count f valid-ptree? input-samples))
       (for-each
         ($lambda (ptree)
           ($define! form

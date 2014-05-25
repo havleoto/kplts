@@ -70,6 +70,12 @@
       (guard-dynamic-extent
         entry-guards
         ($lambda ()
+          ($unless ($and? (finite-list? meta)
+                          (apply pair? meta)
+                          (apply symbol? (map car meta))
+                          (apply binds? (cons pre-env (map car meta)))
+                          (apply binds? (cons post-env (map car meta))))
+            (error "Malformed $test-group form. Invalid metadata."))
           ($define! test-env
             ($let ()
               ($import! (access-current-test) path globals)
@@ -139,8 +145,9 @@
                   ((positive? local-fail-counter)
                     ($set! our summary #f))
                   ((=? local-pass-counter n)
-                    ($set! our summary #t)))))))
-
+                    ($set! our summary #t))
+                  (#t
+                    (test-print "Warning: passed" local-pass-counter "tests, but planned" n)))))))
 
   ($define! entry-guards
     (list (list root-continuation
