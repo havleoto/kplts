@@ -28,6 +28,7 @@
        (cite (kernel-report 3)))
     (load "types.k")
     (load "environment-concepts.k")
+    (load "evaluator.k")
     (load "tail-recursion.k"))
   ;;
   ;; Ten core modules [KR, sections 4-6].

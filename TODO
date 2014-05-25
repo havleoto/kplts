@@ -1,6 +1,7 @@
 KPLTS TODO
 ==========
 
+  - add a flag to print all evaluations for debugging purposes
   - how to test error messages and irritant lists?
   - test cyclic argument lists
   - remove hardcoded paths in run/*.sh
