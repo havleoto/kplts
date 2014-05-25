@@ -25,6 +25,11 @@
 ;;;     compare using the binary predicate EQV?. Record the result
 ;;;     in the current test group.
 ;;;
+;;;   ($check-error EXPR)
+;;;
+;;;     Evaluate EXPR in the dnyamic environment. Pass if an error
+;;;     occurs during evaluation.
+;;;
 ;;;   ($eval-table (SUT REF) ...)
 ;;;
 ;;;     Evaluate SUT and REF in a standard environment. Pass if the
@@ -95,7 +100,7 @@
                       (list ye yr))))))
 
 ($define! $check-error
-  ($vau expr denv
+  ($vau (expr) denv
     ($define! (xe xr) (eval-protect expr denv))
     (test-result! #ignore (equal? event-error xe) expr xr)))
 
