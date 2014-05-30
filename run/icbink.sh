@@ -1,7 +1,11 @@
 #! /bin/sh
 
 #ICBINK=~/src/kernel/icbink/entry_point-c
-ICBINK=~/klisp/icbink/entry_point-c
 
-cd tests
+# Allow user to set their own.
+if [ -z $ICBINK ] ; then
+    ICBINK=~/klisp/icbink/entry_point-c
+fi
+
+cd $(dirname $0)/../tests
 $ICBINK ../run/icbink-compatibility.k
