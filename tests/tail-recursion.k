@@ -32,4 +32,21 @@
                      (list x y)
                      (a x y (- n 1)))))
               (k (* 4 appropriate-number-of-calls)))
-      ($check equal? (a #t #t k) (list #t #f)))))
+      ($check equal? (a #t #t k) (list #t #f))))
+
+  ($test-group continuation-capture
+      ((cite (kernel-report 3 10 rationale)
+             "... the continuation that is used in the tail call has the
+              same semantics as the continuation passed to the combiner
+              containing the call.")
+       (number 2))
+    ($letrec ((e (get-current-environment))
+              (k appropriate-number-of-calls)
+              (f ($lambda (n)
+                   ($let/cc cc
+                     ($cond
+                       ((equal? n k)       ($set! e c1 cc) (f (+ n 1)))
+                       ((equal? n (* 2 k)) ($set! e c2 cc) n)
+                       (#t                 (f (+ n 1))))))))
+      ($check equal? (f 0) (* 2 k))
+      ($check equal? c1 c2))))
