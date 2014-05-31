@@ -131,7 +131,7 @@
                                (eval subtest results))
                              (#t
                                (test-print "Warning:" subtest "not tested!")
-                               #f)))
+                               #t)))
                     args)))
               (for-each
                 ($lambda (subtest)

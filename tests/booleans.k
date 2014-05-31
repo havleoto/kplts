@@ -83,7 +83,7 @@
         ((or? #f #f) #f)))
     ($test-group error-handling
         ((number 20))
-      ($fuzz-applicative 20 and?
+      ($fuzz-applicative 20 or?
         ($lambda (x) ($and? (finite-list? x) (apply boolean? x)))
         ()
         (#t)
