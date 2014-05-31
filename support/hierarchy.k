@@ -36,7 +36,7 @@
 ;;;   test combiners like $check and $eval-table.
 ;;;
 
-($provide! ($test-suite $test-group test-result!)
+($provide! ($test-suite $test-group test-result! warn)
 
   ($define! (bind-current-test access-current-test)
     (make-keyed-dynamic-variable))
@@ -46,7 +46,8 @@
       ($define! globals
         ($bindings->environment
                      (global-pass-counter 0)
-                     (global-fail-counter 0)))
+                     (global-fail-counter 0)
+                     (global-warn-counter 0)))
       (bind-current-test
         ($bindings->environment
           (path ())
@@ -57,9 +58,10 @@
           (local-fail-counter 0))
         ($lambda ()
           (eval (cons $test-group args) denv)
-          ($import! globals global-pass-counter global-fail-counter)
+          ($import! globals global-pass-counter global-fail-counter global-warn-counter)
           (test-print "Total:" global-pass-counter "pass,"
-                      global-fail-counter "fail")))))
+                      global-fail-counter "fail,"
+                      global-warn-counter "warnings.")))))
 
   ($define! $test-group
     ($vau (name meta . body) denv
@@ -130,13 +132,13 @@
                       ($cond ((binds? results subtest)
                                (eval subtest results))
                              (#t
-                               (test-print "Warning:" subtest "not tested!")
+                               (warn subtest "not tested!")
                                #t)))
                     args)))
               (for-each
                 ($lambda (subtest)
                   ($when ($and? (symbol? subtest) (not? (member? subtest args)))
-                    (test-print "Warning:" subtest "tested but not planned!")))
+                    (warn subtest "tested but not planned!")))
                 ran)))
       (number ($lambda (n)
                 ($define! our (access-current-test))
@@ -147,7 +149,7 @@
                   ((=? local-pass-counter n)
                     ($set! our summary #t))
                   (#t
-                    (test-print "Warning: passed" local-pass-counter "tests, but planned" n)))))))
+                    (warn "passed" local-pass-counter "tests, but planned" n)))))))
 
   ($define! entry-guards
     (list (list root-continuation
@@ -172,4 +174,10 @@
           ($increment! current-test local-fail-counter)
           ($increment! globals global-fail-counter)
           (apply test-print
-                 (list* "FAIL" (reverse (cons test-id path)) result rest)))))))
+                 (list* "FAIL" (reverse (cons test-id path)) result rest))))))
+
+  ($define! warn
+    ($lambda args
+      ($import! (access-current-test) globals)
+      ($increment! globals global-warn-counter)
+      (apply test-print (cons "Warning:" args)))))
