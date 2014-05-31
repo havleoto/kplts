@@ -42,4 +42,17 @@
       ($define! f (make-environment d c))
       ($check equal? ($remote-eval x f) 3)
       ($check equal? ($remote-eval y f) 2)
-      ($check equal? ($remote-eval z f) 4)))
+      ($check equal? ($remote-eval z f) 4))
+
+  ($test-group error-handling
+      ((cite (kernel-report 3 2)
+             "if no such value is found, an error is signaled.")
+       (number 5))
+    ($define! a ($bindings->environment (x 1) (y 2)))
+    ($define! b ($bindings->environment (x 3) (z 4)))
+    ($define! c (make-environment a b))
+    ($check-error ($remote-eval z a))
+    ($check-error ($remote-eval y b))
+    ($check-error ($remote-eval w a))
+    ($check-error ($remote-eval w b))
+    ($check-error ($remote-eval w c))))
