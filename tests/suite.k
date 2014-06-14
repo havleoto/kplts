@@ -18,7 +18,6 @@
              ;... is there anything else to Kernel syntax than lexemes?
              ))
     (load "lexemes.k"))
-
   ;;
   ;; Semantics of Kernel Language as described in [KR, section 3].
   ;;
