@@ -12,16 +12,17 @@
       ((cite (kernel-report 2)
              "Upper and lower case forms of a letter are never distinguished
              except within character and string constants.")
-       (number 9))
-    (($vau (x y) #ignore ($check equal? x y)) iDentiFier IdenTIfier)
-    ($check equal? $vau $VaU)
-    ($check equal? #x1AB #X1ab)
-    ($check equal? #e123 #E123)
-    ($check equal? #e+infinity #E+iNfInItY)
-    ($check equal? #t #T)
-    ($check equal? #f #F)
-    ($check equal? #ignore #IGNoRE)
-    ($check equal? #inert #INeRT))
+       (plan identifiers numbers other))
+    ($test-group identifiers
+         ((number 1))
+      (($vau (x y) #ignore ($check equal? x y)) iDentiFier IdenTIfier))
+    ;;
+    ;; Subgroups are put in separate files in order to keep failures
+    ;; localized. Otherwise, non-conforming case sensitive interpreters
+    ;; could refuse to parse the whole file lexemes.k.
+    ;;
+    (load "case-insensitive-numbers.k")
+    (load "case-insensitive-other.k"))
 
   ($test-group identifiers
       ((cite (kernel-report 2 1))
@@ -55,27 +56,12 @@ b)))
   ($test-group exact-number-representations
       ((cite (kernel-report 12 4))
        (number 18))
-    ($check (number? 0))
-    ($check (number? -0))
-    ($check (number? #b1))
-    ; exactness and base prefix can go in either order.
-    ($check (number? #b#e01))
-    ($check (number? #e#d1))
-    ($check (number? #e+infinity))
-    ($check (number? #e-infinity))
-    ($check (number? #e#b10))
-    ($check (number? #X1cC))
-    ($check (number? #xeee))
-    ($check (number? #e#o12345670))
-    ; negative non-decimal
-    ($check (number? #e#b-10))
-    ($check (number? #x-deadbeef))
-    ($check (number? #e#o-4))
-    ; bignums
-    ($check (number? 999999999999999999999999999999999999999999999999999999999999999))
-    ($check (number? #b1111111111111111111111111111111111111111111111111111111111111111111111111111))
-    ($check (number? #o7777777777777777777777777777777777777777777777777777777777777777777))
-    ($check (number? #xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff)))
+    ;;
+    ;; The tested syntax is put in a separate file in order to keep failures
+    ;; localized. Otherwise, non-conforming interpreters could refuse to
+    ;; parse the whole file lexemes.k.
+    ;;
+    (load "exact-number-representations.k"))
 
   ($test-group other-notations
       ((cite (kernel-report 2 3))
