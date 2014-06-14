@@ -18,6 +18,16 @@
 ;;;
 ;;;   Return randomly chosen element of XS.
 ;;;
+;;;
+;;; Implementation based on description from the web site:
+;;;
+;;;   INVERSIVE PSEUDORANDOM NUMBER GENERATORS: CONCEPTS, RESULTS AND LINKS
+;;;   http://random.mat.sbg.ac.at/generators/wsc95/inversive/inversive.html
+;;;
+;;; See also:
+;;;
+;;;   http://en.wikipedia.org/wiki/Inversive_congruential_generator
+;;;
 
 ($provide! (make-random-generator)
 

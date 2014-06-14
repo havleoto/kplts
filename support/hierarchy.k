@@ -13,6 +13,10 @@
 ;;;
 ;;;       Declare name of subtests in advance.
 ;;;
+;;;     (number N)
+;;;
+;;;       Declare number of subtests in advance.
+;;;
 ;;;     (cite REFERENCE . TEXTs)
 ;;;
 ;;;       Refer to the part of the specification relevant to the test.
@@ -34,6 +38,10 @@
 ;;;
 ;;;   The applicative test-result! is used internally in higher-level
 ;;;   test combiners like $check and $eval-table.
+;;;
+;;; (warn . ARGUMENTS)
+;;;
+;;;   Print warning message.
 ;;;
 
 ($provide! ($test-suite $test-group test-result! warn)

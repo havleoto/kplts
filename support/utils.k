@@ -41,6 +41,15 @@
 ;;
 ;; More utilities.
 ;;
+;;   ($increment! ENVIRONMENT SYMBOL)
+;;
+;;     Increment the value bound to SYMBOL in ENVIRONMENT.
+;;
+;;   (list-product XS YS)
+;;
+;;     Compute cartesian product of lists. Return a list of lists (X Y),
+;;     where X is an element of XS and Y is an element of YS.
+;;
 
 ($define! $increment!
   ($vau (e s) denv
