@@ -10,11 +10,15 @@
            kernel-standard
            kernel-extensions))
   ;;
-  ;; Semantics of Kernel Language as described in [KR, section 3].
+  ;; Syntax of Kernel Language as described in [KR, section 2].
   ;;
-  ;TODO ($test-group kernel-syntax
-  ;   ()
-  ;)
+  ($test-group kernel-syntax
+      ((cite (kernel-report 2))
+       (plan lexemes
+             ;... is there anything else to Kernel syntax than lexemes?
+             ))
+    (load "lexemes.k"))
+
   ;;
   ;; Semantics of Kernel Language as described in [KR, section 3].
   ;;
