@@ -12,11 +12,12 @@
       ((cite (kernel-report 2)
              "Upper and lower case forms of a letter are never distinguished
              except within character and string constants.")
-       (number 8))
+       (number 9))
     (($vau (x y) #ignore ($check equal? x y)) iDentiFier IdenTIfier)
     ($check equal? $vau $VaU)
     ($check equal? #x1AB #X1ab)
     ($check equal? #e123 #E123)
+    ($check equal? #e+infinity #E+iNfInItY)
     ($check equal? #t #T)
     ($check equal? #f #F)
     ($check equal? #ignore #IGNoRE)
