@@ -5,7 +5,7 @@ Kernel Programming Language Test Suite
   conformance of Kernel Language implementations with the Kernel Report
   [KR]. The primary purpose is to facilitate development of Kernel
   Language interpreters. The test suite source code is freely available
-  under under the MIT license.
+  under the MIT license.
 
 Interpreters
 ------------
