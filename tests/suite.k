@@ -18,7 +18,6 @@
              ;... is there anything else to Kernel syntax than lexemes?
              ))
     (load "lexemes.k"))
-
   ;;
   ;; Semantics of Kernel Language as described in [KR, section 3].
   ;;
@@ -49,7 +48,9 @@
              environment-mutation
              combiners)
        (cite (kernel-report "4-6")))
-    (load "booleans.k"))
+    (load "booleans.k")
+    (load "pairs-and-lists.k")
+    (load "environments.k"))
   ;;
   ;; The non-core modules from [KR, sections 7-15].
   ;;

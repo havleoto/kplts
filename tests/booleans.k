@@ -6,7 +6,7 @@
 
 ($test-group booleans
     ((cite (kernel-report 6 1))
-     (plan boolean? not? and? or? $and? $or?))
+     (plan boolean? $if not? and? or? $and? $or?))
 
   ($test-group boolean?
       ((cite (kernel-report 4 1 1))
@@ -28,6 +28,53 @@
         (#t)
         (#t #t)
         (#t #t #t))))
+
+  ($test-group $if
+      ((cite (kernel-report 4 5 2))
+       (plan normal-operation error-handling))
+    ($test-group normal-operation
+        ((number 7))
+      ; Basic behavior, only the appropriate clause is evaluated after the
+      ; test.
+      ($check ($if (number? (+ 1 2)) #t ($check #f)))
+      ($check ($if (number? (cons 1 2)) ($check #f) #t))
+      ; Shadow some binding in $if's static environment to test that the
+      ; clauses are evaluated in the dynamic environment.
+      ($let ((cons +))
+        ($check ($if (number? (cons 1 2))
+                  #t
+                  #f))
+        ($check ($if #t
+                  (number? (cons 1 2))
+                  #f))
+        ($check ($if #f
+                  #f
+                  (number? (cons 1 2)))))
+      ; Consequent evaluated in tail context.
+      ($let/cc if-cont
+        ($if #t
+          ($let/cc consequent-cont
+            ($check equal? consequent-cont if-cont))
+          ($check #f)))
+      ; Alternative evaluated in tail context.
+      ($let/cc if-cont
+        ($if #f
+          ($check #f)
+          ($let/cc alternative-cont
+            ($check equal? alternative-cont if-cont)))))
+    ($test-group error-handling
+        ((number 5))
+      ($check-error ($if "not a boolean" #inert #inert))
+      ; Nontrivial evaluation.
+      ($check-error ($if (string-append "not" " a boolean")
+                      #inert
+                      #inert))
+      ; No alternative
+      ($check-error ($if #t #t))
+      ; Other arity errors, for good measure.
+      ($check-error ($if))
+      ($check-error ($if #t #t #t #t))))
+
 
   ($test-group not?
       ((cite (kernel-report 6 1 1))
