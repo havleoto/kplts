@@ -85,37 +85,33 @@
                            ($bindings->environment (x "shadowed x"))))
         "shadowing x"))
 
-    ; XXX: I haven't tested this because icbink doesn't implement the pair
-    ; mutation module.  - euccastro@gmail.com
-    ($when ($binds? (get-current-environment) set-car!)
       ($test-group parent-list-mutation
           ((cite (kernel-report 4 8 4)
                  "The constructed environment internally stores its list of
-                 parents independent of the first- class list environments, so
+                 parents independent of the first-class list environments, so
                  that subsequent mutation of environments will not change the
                  parentage of the constructed environment.")
-           (number 1))
+            (require-modules pair-mutation)
+            (number 1))
         ($let* ((parent-envs (list ($bindings->environment (a 1))))
                 (env (apply make-environment parent-envs)))
           (set-car! parent-envs ($bindings->environment (a 2)))
-          ($check equal? (eval ($quote a) env) 1))))
+          ($check equal? (eval ($quote a) env) 1)))
 
-    ; XXX: I haven't tested this because icbink doesn't implement the pair
-    ; mutation module.  - euccastro@gmail.com
-    ($when ($binds? (get-current-environment) set-cdr!)
       ($test-group cyclic-parent-list
           ((cite (kernel-report 4 8 4)
                  "If the provided list environments is cyclic, the constructed
                  environment will still check each of its parents at most once,
                  and signal an error if no binding is found locally or in any of
                  the parents.")
-           (number 1))
+           (require-modules pair-mutation)
+           (number 3))
         ($let ((parent-envs (list ($bindings->environment (a 1)))))
           (set-cdr! parent-envs parent-envs)
           ($let ((env (apply make-environment parent-envs)))
             ($check ($binds? env a))
             ($check (not? ($binds? env b)))
-            ($check-error (eval ($quote b) env))))))
+            ($check-error (eval ($quote b) env)))))
 
     ($test-group error-handling
         ((number 5))

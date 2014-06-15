@@ -59,6 +59,11 @@
 
 ($define! appropriate-number-of-calls 200)
 
+($define! supported-modules
+  ((unwrap list) equivalence-under-mutation
+                 pair-mutation
+                 environment-mutation))
+
 (load "../support/utils.k")
 (load "../support/checks.k")
 (load "../support/fuzz.k")

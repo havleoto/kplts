@@ -21,3 +21,8 @@
     (newline)))
 
 ($define! appropriate-number-of-calls 10000)
+
+($define! supported-modules
+  ($quote* equivalence-under-mutation
+           pair-mutation
+           environment-mutation))

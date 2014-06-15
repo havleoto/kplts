@@ -22,3 +22,9 @@ Run scripts
       set according to the speed of the implementation (higher number
       for faster implementations). The implementation should be able
       to perform that many calls in less than one second.
+
+  * supported-modules
+
+      List of symbols. Each symbol names an optional module defined
+      in the Kernel Report. The interpreter under test claims support
+      of a module by listing it here.

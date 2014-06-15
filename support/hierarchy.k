@@ -26,6 +26,12 @@
 ;;;     (require-standard-bindings . SYMBOLs)
 ;;;
 ;;;       Skip the test, if not all SYMBOLs are implemented.
+;;;       TODO: Do not fail, but skip?
+;;;
+;;;     (require-modules . SYMBOLs)
+;;;
+;;;       Skip the test, if some of the SYMBOLs is not present in the
+;;;       list supported-modules declared by the interpreter under test.
 ;;;
 ;;;   The top-level group should be declared using $test-suite. Other
 ;;;   groups should be declared using $test-group.
@@ -43,6 +49,16 @@
 ;;;
 ;;;   Print warning message.
 ;;;
+;;; (kernel-module? . OBJECTs)
+;;;
+;;;   Return #t if each of OBJECTs is a symbol denoting a module
+;;;   defined in the Kernel Report.
+;;;
+;;; (supported-module? . SYMBOLs)
+;;;
+;;;   Return #t if the interpreter under test claims support of
+;;;   all modules denoted by SYMBOLs.
+;;;
 
 ($provide! ($test-suite $test-group test-result! warn)
 
@@ -55,6 +71,7 @@
         ($bindings->environment
                      (global-pass-counter 0)
                      (global-fail-counter 0)
+                     (global-skip-counter 0)
                      (global-warn-counter 0)))
       (bind-current-test
         ($bindings->environment
@@ -66,9 +83,11 @@
           (local-fail-counter 0))
         ($lambda ()
           (eval (cons $test-group args) denv)
-          ($import! globals global-pass-counter global-fail-counter global-warn-counter)
+          ($import! globals global-pass-counter global-fail-counter
+                            global-skip-counter global-warn-counter)
           (test-print "Total:" global-pass-counter "pass,"
                       global-fail-counter "fail,"
+                      global-skip-counter "skipped,"
                       global-warn-counter "warnings.")))))
 
   ($define! $test-group
@@ -94,6 +113,7 @@
                 (globals globals)
                 (results (make-environment))
                 (ran ())
+                (skip #f)
                 (local-pass-counter 0)
                 (local-fail-counter 0))))
           (bind-current-test
@@ -102,8 +122,9 @@
               ($import! (access-current-test) path)
               (apply test-print (cons ";" (reverse path)))
               (eval-body meta pre-env)
-              (eval-body body)
-              (eval-body meta post-env)))
+              ($unless ($remote-eval skip (access-current-test))
+                (eval-body body)
+                (eval-body meta post-env))))
           ($when ($binds? test-env summary)
             ($import! test-env summary)
             (test-result! name summary)))
@@ -122,6 +143,14 @@
           ($let ((env (make-kernel-standard-environment)))
             ($unless (eval (list* $binds? env args) env)
               (error "Required bindings not implemented." args)))))
+      (require-modules
+        ($vau args denv
+          ($unless (apply supported-module? args)
+            ($define! our (access-current-test))
+            ($import! our globals path)
+            ($set! our skip #t)
+            ($increment! globals global-skip-counter)
+            (test-print "Skipped:" (car path)))))
       (cite no-op)
       (plan no-op)
       (number no-op)))
@@ -129,6 +158,7 @@
   ($define! post-env
     ($bindings->environment
       (require-standard-bindings no-op)
+      (require-modules no-op)
       (cite no-op)
       (plan ($vau args denv
               ($define! our (access-current-test))
@@ -189,3 +219,56 @@
       ($import! (access-current-test) globals)
       ($increment! globals global-warn-counter)
       (apply test-print (cons "Warning:" args)))))
+
+($provide! (kernel-module? supported-module?)
+
+  ($define! list->predicate
+    ($lambda (xs)
+      ($lambda ys
+        (apply and?
+               (map ($lambda (y) (member? y xs))
+                    ys)))))
+
+  ;; All modules from the kernel report.
+  ;;  TODO: list only optional ones?
+  ;;
+  ($define! kernel-module?
+    ((unwrap list->predicate)
+     (booleans
+      equivalence-under-mutation
+      equivalence-up-to-mutation
+      symbols
+      control
+      pairs-and-lists
+      pair-mutation
+      environments
+      environment-mutation
+      combiners
+      continuations
+      encapsulations
+      promises
+      keyed-dynamic-variables
+      keyed-static-variables
+      numbers
+        integer rational inexact real complex
+      strings
+      characters
+      ports)))
+
+  ;; The list of supported optional modules is defined by the compatibility layer.
+  ;;
+  (test-print ";" "The system under test claims support of the optional modules:")
+  (for-each
+    ($lambda (m)
+      ($if (kernel-module? m)
+        (test-print ";  " m)
+        (test-print ";  " m "(this is not a standard module, check supported-modules)")))
+    supported-modules)
+
+  ;; Make a copy to catch accidental mutation, if possible.
+  ;;
+  ($define! supported-module?
+    (list->predicate
+      ($if ($binds? (get-current-environment) copy-es-immutable)
+        (copy-es-immutable supported-modules)
+        supported-modules))))

@@ -12,6 +12,9 @@
 
 ($define! appropriate-number-of-calls 1000)
 
+($define! supported-modules
+  ((unwrap list) environment-mutation))
+
 (load "../support/utils.k")
 (load "../support/checks.k")
 (load "../support/fuzz.k")
