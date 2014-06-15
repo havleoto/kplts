@@ -48,7 +48,8 @@
              environment-mutation
              combiners)
        (cite (kernel-report "4-6")))
-    (load "booleans.k"))
+    (load "booleans.k")
+    (load "pairs-and-lists.k"))
   ;;
   ;; The non-core modules from [KR, sections 7-15].
   ;;
