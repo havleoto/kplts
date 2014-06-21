@@ -64,7 +64,8 @@
              strings
              characters
              ports))
-    (load "continuations.k"))
+    (load "continuations.k")
+    (load "numbers.k"))
   ;;
   ;; Extensions [R7RS, klisp].
   ;;
