@@ -4,6 +4,28 @@
 ;;; Test arithmetic operations with exact infinite arguments and/or results.
 ;;;
 
+($test-group div-and-mod
+    ((cite (kernel-report 12 5 8))
+     (plan infinite-dividend infinite-divisor))
+  ($test-group infinite-dividend
+       ((cite (kernel-report 12 5 8)
+              "if real1 is infinite or real2 is zero, an error is signaled")
+        (number 6))
+    ($check-error (div-and-mod #e+infinity 2))
+    ($check-error (div-and-mod #e-infinity 1))
+    ($check-error (div #e+infinity 42))
+    ($check-error (div #e-infinity #e+infinity))
+    ($check-error (mod #e+infinity 0))
+    ($check-error (mod #e-infinity -5)))
+  ;; XXX Don't know what to expect from (div-and-mod x #e+infinity)
+  ;($test-group infinite-divisor
+  ;    ((number 4))
+  ;  ($check equal? (div-and-mod  10 #e+infinity) (0 10))
+  ;  ($check equal? (div-and-mod -10 #e+infinity) (-1 #e+infinity))
+  ;  ($check equal? (div-and-mod  10 #e-infinity) (0 10))
+  ;  ($check equal? (div-and-mod -10 #e-infinity) (1 #e+infinity)))
+)
+
 ($test-group abs
     ((cite (kernel-report 12 5 12))
      (require-standard-bindings abs)

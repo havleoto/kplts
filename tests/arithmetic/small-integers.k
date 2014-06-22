@@ -4,6 +4,60 @@
 ;;; Test arithmetic operations with small (less than 1000) integer arguments.
 ;;;
 
+;; div-and-mod: The defintion of div-and-mod in the Kernel Report
+;; is suspicious, but it also mentions R6RS. KPLTS follows R6RS.
+;;
+($test-group div-and-mod
+    ((cite (kernel-report 12 5 8)
+           (r6rs 11 7 3 1))
+     (require-standard-bindings div-and-mod)
+     (plan positive-arguments r6rs division-by-zero error-handling))
+  ($letrec
+      ((test-case ($lambda (((x y) (q r)))
+                    ($check equal?
+                      (list (div x y) (mod x y) (div-and-mod x y))
+                      (list q r (list q r)))))
+       ($test-cases ($vau cases #ignore
+                      (for-each test-case cases))))
+    ($test-group positive-arguments
+        ((number 2))
+      ($test-cases
+        ((10 5) (2 0))
+        ((5678 1234) (4 742))))
+    ($test-group r6rs
+        ((number 17))
+      ($test-cases
+        ;; examples from R6RS
+        (( 123 10) ( 12 3))  (( 123 -10) (-12 3))
+        ((-123 10) (-13 7))  ((-123 -10) ( 13 7))
+        ;; more test cases
+        (( 8  8) ( 1  0))  (( 5  3) ( 1  2))
+        (( 2  7) ( 0  2))  (( 0  1) ( 0  0))
+        ((-2  2) (-1  0))  ((-3  5) (-1  2))
+        ((-7  6) (-2  5))  (( 5 -3) (-1  2))
+        (( 4 -4) (-1  0))  (( 4 -9) ( 0  4))
+        ((-7 -6) ( 2  5))  ((-7 -7) ( 1  0))
+        ((-7 -8) ( 1  1))))
+    ($test-group division-by-zero
+        ((cite (kernel-report 12 5 8)
+               "if real2 is zero, an error is signaled")
+         (number 5))
+      ($check-error (div-and-mod 0 0))
+      ($check-error (div-and-mod 1 0))
+      ($check-error (div-and-mod -1 0))
+      ($check-error (div 5 0))
+      ($check-error (mod -9 0)))
+    ($test-group error-handling
+        ((number 30))
+      ($let ((valid-argument-list?
+              ($lambda (x)
+                ($and? (pair? x) (pair? (cdr x)) (null? (cddr x))
+                       (apply number? x)
+                       (not? (equal? x 0))))))
+      ($fuzz-applicative 10 div valid-argument-list? (10 20))
+      ($fuzz-applicative 10 mod valid-argument-list? (-10 20))
+      ($fuzz-applicative 10 div-and-mod valid-argument-list? (20 -20))))))
+
 ($test-group abs
     ((cite (kernel-report 12 5 12))
      (require-standard-bindings abs)

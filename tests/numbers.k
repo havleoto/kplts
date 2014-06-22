@@ -19,8 +19,8 @@
             complex-numbers))
   ($define! sub-plan
     ($quote (plan + - *
-                  div mod div-and-mod
-                  div0 mod0 div0-and-mod0
+                  div-and-mod
+                  div0-and-mod0
                   abs min max
                   lcm gcd)))
   (for-each
