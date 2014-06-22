@@ -1,8 +1,74 @@
 ;;;
 ;;; arithmetic/small-integers.k
 ;;;
-;;; Test arithmetic operations with small (0-1000) integer arguments.
+;;; Test arithmetic operations with small (less than 1000) integer arguments.
 ;;;
+
+($test-group abs
+    ((cite (kernel-report 12 5 12))
+     (require-standard-bindings abs)
+     (plan normal-operation error-handling))
+  ($test-group normal-operation
+      ((number 4))
+    ($eval-table
+      ((abs  0) 0)  ((abs    1)   1)
+      ((abs -1) 1)  ((abs -128) 128)))
+  ($test-group error-handling
+      ((number 5))
+    ($fuzz-applicative 5 abs
+      ($lambda (x)
+        ($and? (pair? x)
+               (null? (cdr x))
+               (integer? (car x))))
+      (1))))
+
+($test-group min
+    ((cite (kernel-report 12 5 13))
+     (require-standard-bindings min)
+     (plan normal-operation cyclic-argument-list error-handling))
+  ($test-group normal-operation
+      ((number 10))
+    ($eval-table
+      ((min 0  0)  0) ((min  1 0)  0) ((min 0  1)  0) ((min  1  1)  1)
+      ((min 1 -1) -1) ((min -1 0) -1) ((min 0 -1) -1) ((min -1 -1) -1)
+      ((min 0) 0)
+      ((min -1 0 1) -1)))
+  ($test-group cyclic-argument-list
+      ((require-modules pair-mutation)
+       (number 2))
+    ($check equal? (apply min (cyclic-list 0)) 0)
+    ($check equal? (apply min (cyclic-list 10 -20 30)) -20))
+  ($test-group error-handling
+      ((number 20))
+    ($fuzz-applicative 20 min
+      ($lambda (x) ($and? (finite-list? x) (apply integer? x)))
+      (1)
+      (1 2)
+      (1 2 3))))
+
+($test-group max
+    ((cite (kernel-report 12 5 13))
+     (require-standard-bindings max)
+     (plan normal-operation cyclic-argument-list error-handling))
+  ($test-group normal-operation
+      ((number 10))
+    ($eval-table
+      ((max 0  0) 0) ((max  1 0) 1) ((max 0  1) 1) ((max  1  1)  1)
+      ((max 1 -1) 1) ((max -1 0) 0) ((max 0 -1) 0) ((max -1 -1) -1)
+      ((max 0) 0)
+      ((max -1 0 1) 1)))
+  ($test-group cyclic-argument-list
+      ((require-modules pair-mutation)
+       (number 2))
+    ($check equal? (apply max (cyclic-list 0)) 0)
+    ($check equal? (apply max (cyclic-list 10 -20 30)) 30))
+  ($test-group error-handling
+      ((number 20))
+    ($fuzz-applicative 20 max
+      ($lambda (x) ($and? (finite-list? x) (apply integer? x)))
+      (1)
+      (1 2)
+      (1 2 3))))
 
 ($test-group lcm
     ((cite (kernel-report 12 5 14))

@@ -50,6 +50,10 @@
 ;;     Compute cartesian product of lists. Return a list of lists (X Y),
 ;;     where X is an element of XS and Y is an element of YS.
 ;;
+;;   (cyclic-list X1 ... Xn)
+;;
+;;     Build cyclic list (X1 ... Xn X1 ... Xn X1 ...)
+;;
 
 ($define! $increment!
   ($vau (e s) denv
@@ -60,3 +64,12 @@
   ($lambda (xs ys)
     (apply append
            (map ($lambda (y) (map ($lambda (x) (list x y)) xs)) ys))))
+
+($define! cyclic-list
+  ($if ($binds? (get-current-environment) encycle!)
+    ($lambda input
+      ($let ((copy (map list* input)))
+        (encycle! copy 0 (length copy))
+        copy))
+    ($lambda #ignore
+      (error "cycle: The implementation does not support cyclic lists."))))

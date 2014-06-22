@@ -4,6 +4,45 @@
 ;;; Test arithmetic operations with big (10^3-10^100) integer arguments.
 ;;;
 
+($test-group abs
+    ((cite (kernel-report 12 5 12))
+     (require-standard-bindings abs)
+     (number 13))
+  ($eval-table
+    ((abs -235715342147701644447120741111230366998324615875718910)
+     235715342147701644447120741111230366998324615875718910)
+  ;;
+  ;; Inputs of the form -2^(k-1), where k is somewhere around machine
+  ;; word size, may hit corner cases in implementations based on
+  ;; 2-complement arithmetic.
+  ;;
+    ((abs -16384) 16384)
+    ((abs -32768) 32768)
+    ((abs -134217728) 134217728)
+    ((abs -268435456) 268435456)
+    ((abs -536870912) 536870912)
+    ((abs -1073741824) 1073741824)
+    ((abs -2147483648) 2147483648)
+    ((abs -288230376151711744) 288230376151711744)
+    ((abs -2305843009213693952) 2305843009213693952)
+    ((abs -4611686018427387904) 4611686018427387904)
+    ((abs -9223372036854775808) 9223372036854775808)
+    ((abs -170141183460469231731687303715884105728) 170141183460469231731687303715884105728)))
+
+($test-group min
+    ((cite (kernel-report 12 5 13))
+     (require-standard-bindings min)
+     (number 1))
+  ($eval-table
+    ((min 124321342134 124321342135) 124321342134)))
+
+($test-group max
+    ((cite (kernel-report 12 5 13))
+     (require-standard-bindings max)
+     (number 1))
+  ($eval-table
+    ((max 124321342134 124321342135) 124321342135)))
+
 ($test-group lcm
     ((cite (kernel-report 12 5 14))
      (require-standard-bindings lcm)

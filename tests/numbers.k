@@ -13,7 +13,7 @@
       (plan small-integers
             big-integers
             exact-infinities
-            rational-numbers
+            ratios
             real-numbers
             inexact-numbers
             complex-numbers))
@@ -31,7 +31,7 @@
     ($quote ((small-integers)
              (big-integers)
              (exact-infinities)
-             (rational-numbers (require-modules rational))
+             (ratios           (require-modules rational))
              (real-numbers     (require-modules real))
              (inexact-numbers  (require-modules inexact))
              (complex-numbers  (require-modules complex))))))
