@@ -4,6 +4,33 @@
 ;;; Test arithmetic operations with exact infinite arguments and/or results.
 ;;;
 
+($test-group +
+    ((cite (kernel-report 12 5 4))
+     (require-standard-bindings +)
+     (plan finite-argument-list cyclic-argument-list))
+   ($test-group finite-argument-list
+       ((number 7))
+     ($eval-table
+       ((+ #e+infinity) #e+infinity)
+       ((+ #e-infinity) #e-infinity)
+       ((+ #e+infinity         123) #e+infinity)
+       ((+ #e+infinity #e+infinity) #e+infinity)
+       ((+ #e-infinity #e-infinity) #e-infinity)
+       ((+         123 #e-infinity) #e-infinity)
+       ((+ #e-infinity #e-infinity #e-infinity) #e-infinity)))
+   ;; XXX don't know what to expect from (+ #e+infinity . #1=(1 -1 . #1#))
+   ($test-group cyclic-argument-list
+       ((cite (kernel-report 12 5 4)
+              "If the acyclic sum of the elements of a cycle (i.e., the sum
+               of an acyclic list containing just those elements) is non-zero,
+               the sum of the cycle is positive infinity times the acyclic sum
+               of the elements.")
+        (number 4))
+     ($check equal? (apply + (cyclic-list 1)) #e+infinity)
+     ($check equal? (apply + (cyclic-list -1)) #e-infinity)
+     ($check equal? (apply + (cyclic-list 1 -2 3)) #e+infinity)
+     ($check equal? (apply + (cyclic-list -5 10 -6)) #e-infinity)))
+
 ($test-group div-and-mod
     ((cite (kernel-report 12 5 8))
      (plan infinite-dividend infinite-divisor))

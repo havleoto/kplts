@@ -4,6 +4,56 @@
 ;;; Test arithmetic operations with small (less than 1000) integer arguments.
 ;;;
 
+($test-group +
+    ((cite (kernel-report 12 5 4)
+           "Applicative + returns the sum of the elements of /numbers/.")
+     (require-standard-bindings +)
+     (plan empty-argument-list single-argument-list small-random-inputs
+           finite-argument-list cycle-of-zeros))
+
+  ($test-group empty-argument-list
+      ((cite (kernel-report 12 5 4)
+             "If /numbers/ is empty, the sum of its elements is exact zero.")
+       (number 1))
+    ($check equal? (+) 0))
+
+  ($test-group single-argument-list
+      ((number 3))
+    ($eval-table
+      ((+  0)  0)
+      ((+  1)  1)
+      ((+ -1) -1)))
+
+  ($test-group small-random-inputs
+      ((number 30))
+    ($eval-table
+      ((+ -64 -39) -103)  ((+ -63 -56) -119)  ((+ -63 -49) -112)
+      ((+ -62 -47) -109)  ((+ -61 -63) -124)  ((+ -61   0)  -61)
+      ((+ -60   7)  -53)  ((+ -59   1)  -58)  ((+ -53   5)  -48)
+      ((+ -49 -62) -111)  ((+ -48 -33)  -81)  ((+ -48   3)  -45)
+      ((+ -33   3)  -30)  ((+ -32 -36)  -68)  ((+   0  60)   60)
+      ((+   1   0)    1)  ((+   1   1)    2)  ((+   2 -51)  -49)
+      ((+   3   5)    8)  ((+   4  -5)   -1)  ((+   5   3)    8)
+      ((+   8 -62)  -54)  ((+  15 -63)  -48)  ((+  17 -60)  -43)
+      ((+  28  45)   73)  ((+  30 -63)  -33)  ((+  52 -10)   42)
+      ((+  54   2)   56)  ((+  59 -59)    0)  ((+  62  12)   74)))
+
+  ($test-group finite-argument-list
+      ((number 3))
+    ($eval-table
+      ((+ 1 6 4)                                  11)
+      ((+ 4 5 6 0 1 6 2 7)                        31)
+      ((+ 3 6 2 3 1 0 8 9 0 3 2 4 2 5 1 0 8 3 2)  62)))
+
+  ($test-group cycle-of-zeros
+      ((cite (kernel-report 12 5 4)
+             "If all the elements of a cycle are zero, the sum of the cycle is zero.")
+       (number 4))
+    ($check equal? (apply + (cyclic-list 0)) 0)
+    ($check equal? (apply + (cyclic-list 0 0)) 0)
+    ($check equal? (apply + (cyclic-list 0 0 0)) 0)
+    ($check equal? (apply + (list* 2 3 (cyclic-list 0 0))) 5)))
+
 ;; div-and-mod: The defintion of div-and-mod in the Kernel Report
 ;; is suspicious, but it also mentions R6RS. KPLTS follows R6RS.
 ;;
