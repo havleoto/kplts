@@ -25,11 +25,40 @@
                of an acyclic list containing just those elements) is non-zero,
                the sum of the cycle is positive infinity times the acyclic sum
                of the elements.")
+        (require-modules pair-mutation)
         (number 4))
      ($check equal? (apply + (cyclic-list 1)) #e+infinity)
      ($check equal? (apply + (cyclic-list -1)) #e-infinity)
      ($check equal? (apply + (cyclic-list 1 -2 3)) #e+infinity)
      ($check equal? (apply + (cyclic-list -5 10 -6)) #e-infinity)))
+
+($test-group *
+    ((cite (kernel-report 12 5 5))
+     (require-standard-bindings *)
+     (plan finite-argument-list cyclic-argument-list))
+   ($test-group finite-argument-list
+       ((number 7))
+     ($eval-table
+       ((* #e+infinity) #e+infinity)
+       ((* #e-infinity) #e-infinity)
+       ((* #e+infinity         123) #e+infinity)
+       ((* #e+infinity #e+infinity) #e+infinity)
+       ((* #e-infinity #e-infinity) #e+infinity)
+       ((*         123 #e-infinity) #e-infinity)
+       ((* #e-infinity #e-infinity #e-infinity) #e-infinity)))
+   ($test-group cyclic-argument-list
+       ((cite (kernel-report 12 5 5)
+              "If the acyclic product of the elements of a cycle is real
+               greater than one, the product of the cycle is positive infinity.")
+        (require-modules pair-mutation)
+        (number 5))
+     ($check equal? (apply * (cyclic-list 2)) #e+infinity)
+     ($check equal? (apply * (cons -2 (cyclic-list 2))) #e-infinity)
+     ($check equal? (apply * (cyclic-list 3 5)) #e+infinity)
+     ($check equal? (apply * (cyclic-list #e+infinity #e+infinity)) #e+infinity)
+     ;; XXX Not sure about cycles that contain negative numbers.
+     ;;     Bug in Kernel Report?
+     ($check equal? (apply * (cyclic-list 1 -2 -3)) #e+infinity)))
 
 ($test-group div-and-mod
     ((cite (kernel-report 12 5 8))

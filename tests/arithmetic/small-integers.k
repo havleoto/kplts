@@ -48,11 +48,70 @@
   ($test-group cycle-of-zeros
       ((cite (kernel-report 12 5 4)
              "If all the elements of a cycle are zero, the sum of the cycle is zero.")
+       (require-modules pair-mutation)
        (number 4))
     ($check equal? (apply + (cyclic-list 0)) 0)
     ($check equal? (apply + (cyclic-list 0 0)) 0)
     ($check equal? (apply + (cyclic-list 0 0 0)) 0)
     ($check equal? (apply + (list* 2 3 (cyclic-list 0 0))) 5)))
+
+($test-group *
+    ((cite (kernel-report 12 5 5)
+           "Applicative * returns the product of the elements of /numbers/.")
+     (require-standard-bindings *)
+     (plan empty-argument-list single-argument-list small-random-inputs
+           finite-argument-list cycle-of-ones zero-cycle-product))
+
+  ($test-group empty-argument-list
+      ((cite (kernel-report 12 5 5)
+             "If /numbers/ is empty, the product of its elements is exact zero.")
+       (number 1))
+    ($check equal? (*) 1))
+
+  ($test-group single-argument-list
+      ((number 3))
+    ($eval-table
+      ((*  0)  0)
+      ((*  1)  1)
+      ((* -1) -1)))
+
+  ($test-group small-random-inputs
+      ((number 18))
+    ($eval-table
+      ((* -50  50) -2500)  ((* -41  10) -410)  ((* -40 -47)  1880)
+      ((* -34  58) -1972)  ((* -32 -32) 1024)  ((* -30 -22)   660)
+      ((* -19 -54)  1026)  ((*  -6   0)    0)  ((*   0 -27)     0)
+      ((*   0   0)     0)  ((*   0  24)    0)  ((*   6   0)     0)
+      ((*  10 -10)  -100)  ((*  20 -21) -420)  ((*  23  31)   713)
+      ((*  35  -7)  -245)  ((*  43  43) 1849)  ((*  48 -64) -3072)))
+
+  ($test-group finite-argument-list
+      ((number 4))
+    ($eval-table
+      ((* 1 6 4)                                24)
+      ((* 3 0 6 9)                               0)
+      ((* 2 -5 3 1 -4 2 3)                     720)
+      ((* 1 -1 1 -1 1 -1 1 -1 1 -1 1 -1 1 -1)   -1)))
+
+  ($test-group cycle-of-ones
+      ((cite (kernel-report 12 5 5)
+             "If all the elements of a cycle are positive one, the product of the cycle is positive one.")
+       (require-modules pair-mutation)
+       (number 4))
+    ($check equal? (apply * (cyclic-list 1)) 1)
+    ($check equal? (apply * (cyclic-list 1 1)) 1)
+    ($check equal? (apply * (cyclic-list 1 1 1)) 1)
+    ($check equal? (apply * (list* 2 3 (cyclic-list 1 1))) 6))
+
+  ($test-group zero-cycle-product
+      ((cite (kernel-report 12 5 5)
+             "If the acyclic product of the elements of a cycle has magnitude
+              less than one, the product of the cycle is zero.")
+       (require-modules pair-mutation)
+       (number 3))
+    ($check equal? (apply * (cyclic-list 0)) 0)
+    ($check equal? (apply * (cyclic-list 1 0)) 0)
+    ($check equal? (apply * (cyclic-list 2 0 3)) 0)))
 
 ;; div-and-mod: The defintion of div-and-mod in the Kernel Report
 ;; is suspicious, but it also mentions R6RS. KPLTS follows R6RS.
