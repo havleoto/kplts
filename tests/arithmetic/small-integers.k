@@ -113,6 +113,40 @@
     ($check equal? (apply * (cyclic-list 1 0)) 0)
     ($check equal? (apply * (cyclic-list 2 0 3)) 0)))
 
+($test-group -
+    ((cite (kernel-report 12 5 6))
+     (require-standard-bindings -)
+     (plan single-argument-list small-random-inputs
+           finite-argument-list cyclic-argument-list))
+
+  ($test-group single-argument-list
+      ((cite (kernel-report 12 5 6)
+             "(number . numbers) [...] /numbers/ should be a nonempty list of numbers")
+       (number 1))
+    ($check-error (- 1)))
+
+  ($test-group small-random-inputs
+      ((number 18))
+    ($eval-table
+      ((- -49 -47)  -2)  ((- -30  -2) -28)  ((- -19 -7) -12)
+      ((- -11  -4)  -7)  ((-  -8   8) -16)  ((-  -5  7) -12)
+      ((-   0  23) -23)  ((-   1 -50)  51)  ((-   1  1)   0)
+      ((-   2  24) -22)  ((-   3  -8)  11)  ((-   7  2)   5)
+      ((-   7  10)  -3)  ((-  10   1)   9)  ((-  10  8)   2)
+      ((-  20  19)   1)  ((-  62  -8)  70)  ((-  62 69)  -7)))
+
+  ($test-group finite-argument-list
+      ((number 2))
+    ($eval-table
+      ((- 1 2 3) -4)
+      ((- 8 -2 3 -3 -7 3 1) 13)))
+
+  ($test-group cyclic-argument-list
+      ((require-modules pair-mutation)
+       (number 2))
+    ($check equal? (apply - (cons 5 (cyclic-list 0))) 5)
+    ($check equal? (apply - (cyclic-list 1)) #e-infinity)))
+
 ;; div-and-mod: The defintion of div-and-mod in the Kernel Report
 ;; is suspicious, but it also mentions R6RS. KPLTS follows R6RS.
 ;;

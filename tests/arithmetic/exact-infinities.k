@@ -60,6 +60,17 @@
      ;;     Bug in Kernel Report?
      ($check equal? (apply * (cyclic-list 1 -2 -3)) #e+infinity)))
 
+($test-group -
+    ((cite (kernel-report 12 5 6))
+     (require-standard-bindings -)
+     (number 5))
+  ($eval-table
+    ((- #e+infinity         123) #e+infinity)
+    ((- #e+infinity #e-infinity) #e+infinity)
+    ((- #e-infinity #e+infinity) #e-infinity)
+    ((-         123 #e-infinity) #e+infinity)
+    ((-           0 #e+infinity #e+infinity) #e-infinity)))
+
 ($test-group div-and-mod
     ((cite (kernel-report 12 5 8))
      (plan infinite-dividend infinite-divisor))
