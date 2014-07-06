@@ -26,3 +26,13 @@
   ($quote* equivalence-under-mutation
            pair-mutation
            environment-mutation))
+
+($define! test-options
+  ($parse-options
+      ;; (get-interpreter-arguments) returns () in scripts loaded using
+      ;; -l option, because command line parsing is not yet finished.
+      ;; TODO: Fix that in Bronze Age Lisp.
+      (list-tail (get-interpreter-arguments)
+                 16)
+    (run-only ())
+    (print-evaluations #f)))

@@ -28,3 +28,12 @@ Run scripts
       List of symbols. Each symbol names an optional module defined
       in the Kernel Report. The interpreter under test claims support
       of a module by listing it here.
+
+  * test-options
+
+      An environment with additional options influencing the run of the
+      testsuite read from command line of the run script. The available
+      options are:
+
+        run-only (list of symbols, test group path)
+        print-evaluations (boolean)

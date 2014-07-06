@@ -22,3 +22,9 @@
                  rational
                  real
                  complex))
+
+($define! test-options
+  ($parse-options (cdr (get-script-arguments))
+    (run-only ())
+    (print-evaluations #f)))
+

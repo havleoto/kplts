@@ -64,6 +64,11 @@
                  pair-mutation
                  environment-mutation))
 
+($define! test-options
+  ($bindings->environment
+    (run-only ())
+    (print-evaluations #f)))
+
 (load "../support/utils.k")
 (load "../support/checks.k")
 (load "../support/fuzz.k")

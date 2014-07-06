@@ -121,6 +121,9 @@
             ($lambda ()
               ($import! (access-current-test) path)
               (apply test-print (cons ";" (reverse path)))
+              ($unless (run-path? ($remote-eval run-only test-options)
+                                 (reverse path))
+                (skip-current-test!))
               (eval-body meta pre-env)
               ($unless ($remote-eval skip (access-current-test))
                 (eval-body body)
@@ -132,6 +135,21 @@
                     ($lambda (obj divert)
                       (test-result! name #f obj)
                       (apply divert #inert)))))))
+
+  ($define! run-path?
+    ($lambda (run-only path)
+      ($or? (null? run-only)
+            (null? path)
+            ($and? (equal? (car run-only) (car path))
+                   (run-path? (cdr run-only) (cdr path))))))
+
+  ($define! skip-current-test!
+    ($lambda ()
+      ($define! our (access-current-test))
+      ($import! our globals path)
+      ($set! our skip #t)
+      ($increment! globals global-skip-counter)
+      (test-print "Skipped:" (car path))))
 
   ($define! no-op
     ($vau #ignore #ignore #inert))
@@ -146,11 +164,7 @@
       (require-modules
         ($vau args denv
           ($unless (apply supported-module? args)
-            ($define! our (access-current-test))
-            ($import! our globals path)
-            ($set! our skip #t)
-            ($increment! globals global-skip-counter)
-            (test-print "Skipped:" (car path)))))
+            (skip-current-test!))))
       (cite no-op)
       (plan no-op)
       (number no-op)))
@@ -272,3 +286,13 @@
       ($if ($binds? (get-current-environment) copy-es-immutable)
         (copy-es-immutable supported-modules)
         supported-modules))))
+
+;; Print test options.
+;;
+(test-print "; Test run options:")
+(for-each
+  ($lambda (name) (test-print ";  " name (eval name test-options)))
+  ((unwrap list) run-only print-evaluations))
+
+
+

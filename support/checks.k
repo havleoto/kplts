@@ -71,12 +71,22 @@
                 ($lambda (obj divert)
                   (divert event-exit obj)))))
 
+  ($define! trace-eval-protect
+    ($lambda (expr env event-result)
+      ($when ($remote-eval print-evaluations test-options)
+        ($define! (event result) event-result)
+        (test-print "eval" expr "=>" (event->string event) result))
+      event-result))
+
   ($define! eval-protect
     ($lambda (x e)
-      (guard-dynamic-extent
-        entry-guards
-        ($lambda () (list event-return (eval x e)))
-        exit-guards))))
+      (trace-eval-protect
+        x
+        e
+        (guard-dynamic-extent
+          entry-guards
+          ($lambda () (list event-return (eval x e)))
+          exit-guards)))))
 
 ($define! $check
   ($vau args denv
