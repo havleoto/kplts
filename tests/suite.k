@@ -50,7 +50,9 @@
        (cite (kernel-report "4-6")))
     (load "booleans.k")
     (load "pairs-and-lists.k")
-    (load "environments.k"))
+    (load "environments.k")
+    (load "combiners.k"))
+
   ;;
   ;; The non-core modules from [KR, sections 7-15].
   ;;
