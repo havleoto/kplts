@@ -7,7 +7,8 @@
 ;;; ($test-group NAME META-DATA . BODY)
 ;;;
 ;;;   Define new test group NAME with some META-DATA. The test group
-;;;   is implemented in BODY. The argument META-DATA may contain
+;;;   is implemented in BODY. The argument META-DATA may contain the
+;;;   forms
 ;;;
 ;;;     (plan SUBGROUP-1 SUBGROUP-2 ... SUBGROUP-N)
 ;;;
@@ -30,8 +31,8 @@
 ;;;
 ;;;     (require-modules . SYMBOLs)
 ;;;
-;;;       Skip the test, if some of the SYMBOLs is not present in the
-;;;       list supported-modules declared by the interpreter under test.
+;;;       Skip the test, if any of the SYMBOLs is not present in the
+;;;       list of supported-modules declared by the interpreter under test.
 ;;;
 ;;;   The top-level group should be declared using $test-suite. Other
 ;;;   groups should be declared using $test-group.
