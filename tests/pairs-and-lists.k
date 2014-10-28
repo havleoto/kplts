@@ -137,9 +137,9 @@
         ((number 4))
       ($eval-table
         ((list* 1)        1)
-        ((list* 1 2)      ($quote (1 . 2)))
-        ((list* 1 2 3)    ($quote (1 2 . 3)))
-        ((list* 1 2 3 ()) ($quote (1 2 3)))))
+        ((list* 1 2)      ((unwrap list) . (1 . 2)))
+        ((list* 1 2 3)    ((unwrap list) . (1 2 . 3)))
+        ((list* 1 2 3 ()) ((unwrap list) . (1 2 3)))))
 
     ($test-group error-handling
         ((cite (kernel-report 5 2 2)
@@ -211,6 +211,7 @@
 
     ($test-group cyclic-list
         ((cite (kernel-report 5 7 1))
+         (require-modules pair-mutation)
          (number 6))
       ($letrec ((prepend ($lambda (n x)
                            ($if (positive? n)
@@ -227,4 +228,146 @@
         ((number 20))
       ($fuzz-applicative 20 get-list-metrics
         ($lambda (x) ($and? (pair? x) (null? (cdr x))))
-        ((list 1 2 3))))))
+        ((list 1 2 3)))))
+
+;;
+;; list-tail
+;;
+
+  ($test-group list-tail
+      ((cite (kernel-report 5 7 2)
+             "The list-tail applicative follows /integer/ cdr references
+              starting from /object/.")
+       (plan induction long-list cyclic-list error-handling))
+
+    ($test-group induction
+        ((cite (kernel-report 5 7 2)
+               "The following equivalences hold:
+                (list-tail object 0) == object
+                (list-tail object (+ k 1)) == (list-tail (cdr object) k)")
+         (number 11))
+      (for-each
+        ($lambda ((object ks))
+          ($check equal? (list-tail object 0) object)
+          (for-each
+            ($lambda (k)
+              ($check equal? (list-tail object (+ k 1)) (list-tail (cdr object) k)))
+            ks))
+        ($quote
+          ((()            ())
+           (#f            ())
+           (0             ())
+           ((1 2 3 4 . 5) (0 1 2 3))
+           (((1 2) (3 4)) (0 1))))))
+
+    ($test-group long-list
+        ((require-standard-bindings append)
+         (number 4))
+      ($define! a (list 0 1 2 3 4 5 6 7 8 9))
+      ($define! b (append a a a a a a a a a))
+      ($define! c (append b b b b b b b b b))
+      ($define! d (append c c c c c c c c c))
+      ($check equal? (list-tail b 90) ())
+      ($check equal? (list-tail c 810) ())
+      ($check equal? (list-tail d 7290) ())
+      ($check equal? (car (list-tail d 6789)) 9))
+
+    ($test-group cyclic-list
+        ((cite (kernel-report 5 7 2))
+         (require-modules pair-mutation)
+         (number 7))
+      ($define! object-0 (list* 1 2 (cyclic-list 3 4 5)))
+      ($define! object-1 (cons 2 (cyclic-list 3 4 5)))
+      ($define! object-2 (cyclic-list 3 4 5))
+      ($define! object-3 (cyclic-list 4 5 3))
+      ($define! object-4 (cyclic-list 5 3 4))
+      ($check equal? (list-tail object-0 0) object-0)
+      ($check equal? (list-tail object-0 1) object-1)
+      ($check equal? (list-tail object-0 2) object-2)
+      ($check equal? (list-tail object-0 3) object-3)
+      ($check equal? (list-tail object-0 4) object-4)
+      ($check equal? (list-tail object-0 5) object-2)
+      ($check equal? (list-tail object-0 1234) object-4))
+
+    ($test-group error-handling
+        ((plan invalid-integer invalid-object))
+
+      ($test-group invalid-integer
+          ((cite (kernel-report 5 7 2)
+               "/integer/ should be exact and non-negative")
+           (number 4))
+        ($define! object (list 1 2 3))
+        ($check-error (list-tail #f object))
+        ($check-error (list-tail -1 object))
+        ($check-error (list-tail (/ 1 2) object))
+        ($check-error (list-tail (make-inexact 1 2 3) object)))
+
+      ($test-group invalid-object
+          ((cite (kernel-report 5 7 2)
+               "/object/ must be the start of an improper list
+                containing at least /integer/ pairs")
+           (number 4))
+        ($check-error (list-tail 1 ()))
+        ($check-error (list-tail 2 3))
+        ($check-error (list-tail 4 #f))
+        ($check-error (list-tail 4 (list 1 2 3))))))
+
+;;
+;; length
+;;
+
+  ($test-group length
+      ((cite (kernel-report 6 3 1)
+             "returns the number of consecutive cdr references
+              that can be followed starting from /object/")
+       (plan finite-list improper-list non-list cyclic-list))
+
+     ($test-group finite-list
+         ((number 2))
+       ($check equal? (length (cons () ())) 1)
+       ($check equal? (length (list #t #t #f #f #t #t #f #f)) 8))
+
+     ($test-group improper-list
+         ((number 2))
+       ($check equal? (length (cons 1 2)) 1)
+       ($check equal? (length (cons 1 (cons 2 3))) 2))
+
+     ($test-group non-list
+         ((cite (kernel-report 6 3 1)
+                "if /object/ is not a pair, it returns zero")
+          (number 3))
+       ($check equal? (length ()) 0)
+       ($check equal? (length 42) 0)
+       ($check equal? (length (get-current-environment)) 0))
+
+    ($test-group cyclic-list
+        ((require-modules pair-mutation)
+         (require-standard-bindings finite? positive?)
+         (plan infinity exactness))
+
+      ($define! objects
+        ($let ((a (cyclic-list #t))
+               (b (cyclic-list #f #t)))
+          (list a b (cons a b) (cons b a))))
+
+      ($test-group infinity
+          ((cite (kernel-report 6 3 1)
+                 "if object is a cyclic list, it returns positive infinity")
+           (number 8))
+        (for-each
+          ($lambda (object)
+            ($check equal? (positive? (length object)) #t)
+            ($check equal? (finite? (length object)) #f))
+          objects))
+
+      ($test-group exactness
+          ((cite (kernel-report 6 3 1)
+                 "length returns the (exact) [...] length")
+           (require-modules inexact)
+           (number 4))
+        (for-each
+          ($lambda (object)
+            ($check equal? (exact? (length object)) #t))
+          objects))))
+
+)
