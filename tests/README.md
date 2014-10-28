@@ -49,10 +49,9 @@ Tests
 
   The forms in the body of the $test-group are executed in sequence.
   The support code defines several forms for checking test conditions.
-  Here, we test the condition that the length of the single-element
-  list `(())` created by `(cons () ())` is equal to the expected value
-  1. The `($check ...)` form takes care of accumulating the test pass/fail
+  On line 8, we test the condition that the length of the single-element
+  list `(())` created by `(cons () ())` is equal to the expected value 1.
+  The `($check ...)` form takes care of accumulating the test pass/fail
   result and guarding against errors (and other abnormal continuation
-  passes) that may arise during evaluation.
-
-  More helper combiners are defined in (checks.k)[../support/checks.k]
+  passes) that may arise during evaluation. More helper combiners are
+  defined in [checks.k](../support/checks.k).
