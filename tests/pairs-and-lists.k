@@ -370,4 +370,25 @@
             ($check equal? (exact? (length object)) #t))
           objects))))
 
+;;
+;; list-ref
+;;
+
+  ($test-group list-ref
+      ((cite (kernel-report 6 3 2)
+             "returns the /integer/-th element of list, zero-indexed")
+       (plan normal-operation error-handling))
+
+    ($test-group normal-operation
+        ((number 2))
+      ($eval-table
+        ((list-ref (list 1 2) 0) 1)
+        ((list-ref ((unwrap list) a b c d e f) 5) ((unwrap list) . f))))
+
+    ($test-group error-handling
+        ((number 3))
+      ($check-error (list-ref () 1))
+      ($check-error (list-ref (list 1 2) 3))
+      ($check-error (list-ref (list 1 2) #t))))
+
 )
