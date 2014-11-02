@@ -486,4 +486,84 @@
         ($check-error (append (list 1 2) (cyclic-list 2 3) 5))
         ($check-error (append (cyclic-list #t) (cyclic-list #f))))))
 
+;;
+;; list-neighbors
+;;
+
+  ($test-group list-neighbors
+      ((cite (kernel-report 6 3 4))
+       (plan nil acyclic-examples cyclic-examples
+             acyclic-length cyclic-structure
+             non-list))
+
+    ($test-group nil
+        ((cite (kernel-report 6 3 4)
+               "if /list/ is nil, the result is nil")
+         (number 1))
+       ($check equal? (list-neighbors ()) ()))
+
+    ($test-group acyclic-examples
+        ((number 4))
+      (for-each
+        ($lambda ((a b))
+          ($check equal? (list-neighbors a) b))
+        ((unwrap list)
+          ((1)       ())
+          ((1 2)     ((1 2)))
+          ((1 2 3)   ((1 2) (2 3)))
+          ((1 2 3 4) ((1 2) (2 3) (3 4))))))
+
+    ($test-group acyclic-length
+        ((cite (kernel-report 6 3 4)
+               "If /list/ is non-nil, the length of the result is one
+                less than the length of /list/")
+         (number 3))
+       ($let* ((x (list 0 1 2 3 4 5 6 7 8 9))
+               (y (append x x))
+               (z (append y y)))
+         (for-each
+           ($lambda (x)
+             ($check equal? (length (list-neighbors x))
+                            (- (length x) 1)))
+           (list x y z))))
+
+    ($test-group cyclic-examples
+        ((require-modules pair-mutation)
+         (number 3))
+      ($check equal?
+        (list-neighbors (cyclic-list #t))
+        (cyclic-list (list #t #t)))
+      ($check equal?
+        (list-neighbors (cyclic-list 1 2 3))
+        (cyclic-list (list 1 2) (list 2 3) (list 3 1)))
+      ($check equal?
+        (list-neighbors (list* 1 2 (cyclic-list 3 4)))
+        (list* (list 1 2) (list 2 3) (cyclic-list (list 3 4) (list 4 3)))))
+
+    ($test-group cyclic-structure
+        ((cite (kernel-report 6 3 4)
+               "If /list/ is cyclic, the result is structurally isomorphic
+                to it (i.e., has the same acyclic prefix length and cycle length).")
+         (require-modules pair-mutation)
+         (number 3))
+       ($let* ((a (cyclic-list 0 1 2 3 4 5 6 7 8 9))
+               (b (cyclic-list 10 11 12))
+               (p (list 0 1 2 3 4 5 6 7 8 9))
+               (c (append p p a)))
+         (for-each
+           ($lambda (x)
+             ($check equal?
+               (cddr (get-list-metrics (list-neighbors x)))
+               (cddr (get-list-metrics x))))
+           (list a b c))))
+
+    ($test-group non-list
+        ;;; XXX The derivation in the Kernel Report never raises
+        ;;;     and error. However, klisp does raise an error
+        ;;;     if the argument is not proper list.
+        ((number 3))
+      ($check-error (list-neighbors 1))
+      ($check-error (list-neighbors (cons 1 2)))
+      ($check-error (list-neighbors (list* 1 2 3)))))
+
 )
