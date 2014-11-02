@@ -55,3 +55,13 @@ Tests
   result and guarding against errors (and other abnormal continuation
   passes) that may arise during evaluation. More helper combiners are
   defined in [checks.k](../support/checks.k).
+
+Developing tests with klisp
+===========================
+
+  To run only one test group, use the option `-run-only` (works
+  only with the klisp run script).
+
+```
+  run/klisp.sh -run-only '(KPLTS kernel-core pairs-and-lists)'
+```

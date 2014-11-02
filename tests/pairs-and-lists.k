@@ -391,4 +391,99 @@
       ($check-error (list-ref (list 1 2) 3))
       ($check-error (list-ref (list 1 2) #t))))
 
+;;
+;; append
+;;
+
+  ($test-group append
+      ((cite (kernel-report 6 3 3))
+       (plan freshly-allocate reference-last equivalences cyclic-argument-list error-handling))
+
+    ($test-group freshly-allocate
+        ((cite (kernel-report 6 3 3)
+               "returns a freshly allocated list of the elements of all
+                the specified lists, in order, except...")
+         (require-modules pair-mutation)
+         (number 2))
+      ($define! tail (list 1 2 3))
+      ($define! result (append tail tail ()))
+      ($check equal? result (list 1 2 3 1 2 3))
+      (set-car! tail #t)
+      ($check equal? result (list 1 2 3 1 2 3)))
+
+    ($test-group reference-last
+        ((cite (kernel-report 6 3 3)
+               "if there is a last specified element of /lists/, it
+                is not copied, but is simply referenced by the cdr
+                of the preceding pair (if any) in the resultant list")
+         (require-modules pair-mutation)
+         (number 5))
+      ($define! tail (list 1 2 3))
+      ($check eq? (append tail) tail)
+      ($define! res1 (append tail tail))
+      ($define! res2 (append tail tail tail))
+      ($check equal? res1 (list 1 2 3 1 2 3))
+      ($check equal? res2 (list 1 2 3 1 2 3 1 2 3))
+      (set-car! tail #t)
+      ($check equal? res1 (list 1 2 3 #t 2 3))
+      ($check equal? res2 (list 1 2 3 1 2 3 #t 2 3)))
+
+    ($test-group equivalences
+        ((cite (kernel-report 6 3 3)
+               "The following equivalences hold.
+                  (append) == ()
+                  (append h) == h
+                  (append () h . t) == (append h . t)
+                  (append (cons a b) h . t) == (cons a (append b h . t))")
+         (number 94))
+      ($let ((objects (list () #t (cons -1 -2)))
+             (lists (list () (list () #t) (list 1 2 3)))
+             (lists-of-lists (list () (list ()) (list (list 1 2) (list 3 5 #f)))))
+        ($check equal? (append) ())
+        (for-each
+          ($lambda (h) ($check equal? (append h) h))
+          objects)
+        (for-each
+          ($lambda ((h t))
+            ($check equal? (apply append (list* () h t))
+                           (apply append (cons h t))))
+          (list-product lists lists-of-lists))
+        (for-each
+          ($lambda (((a b) (h t)))
+            ($check equal? (apply append (list* (cons a b) h t))
+                           (cons a (apply append (list* b h t)))))
+          (list-product (list-product objects lists)
+                        (list-product lists lists-of-lists)))))
+
+    ($test-group cyclic-argument-list
+        ((cite (kernel-report 6 3 3)
+               "If lists is cyclic, the cycle of the result list
+                consists of just the elements of the lists specified
+                in the cycle in lists.")
+         (require-modules pair-mutation)
+         (number 1))
+       ($define! cs
+         (list* (list 1 2 3)
+                (list 4 5)
+                (cyclic-list (list 6 7 8)
+                             (list 9 10))))
+       ($check equal? (apply append cs)
+                      (list* 1 2 3 4 5 (cyclic-list 6 7 8 9 10))))
+
+    ($test-group error-handling
+        ((cite (kernel-report 6 3 3)
+               "all the elements of /lists/ except the last element
+                (if any) must be acyclic lists")
+         (plan non-list cyclic-list))
+      ($test-group non-list
+          ((number 3))
+        ($check-error (append 1 ()))
+        ($check-error (append 1 2))
+        ($check-error (append (list 1 2) $if (list 3 4))))
+      ($test-group cyclic-list
+          ((number 3))
+        ($check-error (append (cyclic-list 1) ()))
+        ($check-error (append (list 1 2) (cyclic-list 2 3) 5))
+        ($check-error (append (cyclic-list #t) (cyclic-list #f))))))
+
 )
