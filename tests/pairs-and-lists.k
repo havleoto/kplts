@@ -566,4 +566,106 @@
       ($check-error (list-neighbors (cons 1 2)))
       ($check-error (list-neighbors (list* 1 2 3)))))
 
+;;
+;; assoc
+;;
+
+  ($test-group assoc
+      ((cite (kernel-report 6 3 6)
+             "Applicative /assoc/ returns the first element
+               of /pairs/ whose car is equal? to /object/.")
+       (plan single multiple none cyclic error-handling))
+
+    ($test-group single
+         ((number 5))
+       ($define! pairs
+         ((unwrap list)
+           (1 5)
+           (#t #f)
+           ((2 3) (4 3))
+           ((2 4) (6 7))
+           (#f)))
+       (for-each
+         ($lambda ((k e)) ($check equal? (assoc k pairs) e))
+         ((unwrap list)
+           (1     (1 5))
+           (#t    (#t #f))
+           ((2 3) ((2 3) (4 3)))
+           ((2 4) ((2 4) (6 7)))
+           (#f    (#f)))))
+
+    ($test-group multiple
+        ((number 3))
+      ($define! pairs
+        ((unwrap list) (1 5) (2 ()) (1 6) (2 4) (3 7) (3 8)))
+      (for-each
+        ($lambda ((k e)) ($check equal? (assoc k pairs) e))
+        ((unwrap list) (1 (1 5)) (2 (2 ())) (3 (3 7)))))
+
+    ($test-group none
+        ((cite (kernel-report 6 3 6)
+             "If there is no such element in /pairs/, nil is returned.")
+          (number 3))
+      ($define! pairs
+        ((unwrap list) (#t #f) (2 3) ((1 2))))
+      (for-each
+        ($lambda ((k e)) ($check equal? (assoc k pairs) e))
+        ((unwrap list) (1 ()) (#f ()) ((1 3) ()))))
+
+    ($test-group cyclic
+        ((number 3))
+      ($define! pairs
+        (cons (list 1 2)
+              (cyclic-list (cons 2 3) (list () ()))))
+      (for-each
+        ($lambda ((k e)) ($check equal? (assoc k pairs) e))
+        ((unwrap list) (1 (1 2)) (2 (2 . 3)) (() (() ())))))
+
+    ($test-group error-handling
+        ((number 5))
+      ($check-error (assoc (list 1 2) 1))
+      ($check-error (assoc (cons 1 2) (cons 3 4)))
+      ($check-error (assoc 0 (list* 1 2 3 4 5 6)))
+      ($check-error (assoc #t #f))
+      ($check-error (assoc assoc assoc))))
+
+;;
+;; member?
+;;
+
+  ($test-group member?
+      ((cite (kernel-report 6 3 7)
+             "Applicative member? is a predicate that returns true iff some
+              element of /list/ is equal? to /object/.")
+       (plan acyclic cyclic error-handling))
+
+    ($test-group acyclic
+         ((number 9))
+       ($define! pairs
+         ((unwrap list) 1 #t (x y) ((2 3) (4 3)) (#f)))
+       (for-each
+         ($lambda ((k e)) ($check equal? (member? k pairs) e))
+         ((unwrap list)
+           (0    #f)  (1     #t)  (x             #f)
+           (#f   #f)  (#t    #t)  (()            #f)
+           ((#f) #t)  ((x y) #t)  (((2 3) (4 4)) #f))))
+
+    ($test-group cyclic
+        ((number 6))
+      ($define! pairs
+        (list* #t () (cyclic-list 1 -1)))
+      (for-each
+        ($lambda ((k e)) ($check equal? (member? k pairs) e))
+        ((unwrap list)
+          (#t  #t)  (#f  #f)  (()  #t)
+          (1   #t)  (0   #f)  (-1  #t))))
+
+    ($test-group error-handling
+        ((number 5))
+      ($check-error (member? (list 1 2) 1))
+      ($check-error (member? (cons 1 2) (cons 3 4)))
+      ($check-error (member? 0 (list* 1 2 3 4 5 6)))
+      ($check-error (member? #t #f))
+      ($check-error (member? assoc assoc))))
+
 )
