@@ -567,6 +567,108 @@
       ($check-error (list-neighbors (list* 1 2 3)))))
 
 ;;
+;; filter
+;;
+
+  ($test-group filter
+      ((cite (kernel-report 6 3 5))
+       (plan pass-elements empty-environment same-order cyclic-structure
+             continuation-safety error-handling))
+
+    ($test-group pass-elements
+        ((cite (kernel-report 6 3 5)
+               "Applicative filter passes each of the elements of /list/ as an
+                argument to /applicative/")
+         (number 9))
+      ($define! log ())
+      ($define! input (list 1 #t 3 #f))
+      ($let ((env (get-current-environment)))
+        ($check equal?
+          (filter ($lambda (x) ($set! env log (cons x log)) #f) input)
+          ()))
+      (for-each ($lambda (x) ($check (member? x log))) input)
+      (for-each ($lambda (x) ($check (member? x input))) log))
+
+    ($test-group empty-environment
+        ((cite (kernel-report 6 3 5)
+               "using a fresh empty environment for each call")
+         (number 5))
+      ($check equal?
+        (filter
+          (wrap ($vau (x) e
+            ($check (not? ($binds? e filter)))
+            ($set! e filter "some-value")
+            (integer? x)))
+          (list 1 #t 3 #f))
+        (list 1 3)))
+
+    ($test-group same-order
+        ((cite (kernel-report 6 3 5)
+               "filter constructs and returns a list of all elements of /list/ on
+                which /applicative/ returned true, in the same order as in /list/")
+         (number 4))
+      ($check equal? (filter integer? (list 2 "x" -3 ($quote t) 10 #inert)) (list 2 -3 10))
+      ($check equal? (filter ignore?  (list #ignore #inert #ignore))        (list #ignore #ignore))
+      ($check equal? (filter boolean? (list 1 #t 3 #f 6 #t 9 #t -2 #f))     (list #t #f #t #t #f))
+      ($check equal? (filter not?     (list #t #f #f #t #f #t #t #f))       (list #f #f #f #f)))
+
+    ($test-group cyclic-structure
+        ((cite (kernel-report 6 3 5)
+               "The resultant list has a cycle containing exactly those elements
+                accepted by applicative that were in the cycle of list; if there
+                were no such elements, the result is acyclic.")
+         (require-modules pair-mutation)
+         (number 5))
+      ($define! x (list* 1 2 3 4 (cyclic-list 5 6 7 8)))
+      ($check equal? (filter even? x)                    (list* 2 4 (cyclic-list 6 8)))
+      ($check equal? (filter odd? x)                     (list* 1 3 (cyclic-list 5 7)))
+      ($check equal? (filter pair? x)                    ())
+      ($check equal? (filter ($lambda (x) (<? 5 x 7)) x) (cyclic-list 6))
+      ($check equal? (filter ($lambda (x) (<? x 4)) x)   (list 1 2 3)))
+
+    ($test-group continuation-safety
+        ((number 2))
+      ($check equal?
+        ($let/cc k
+          (filter
+            ($lambda (x) ($if (integer? x) (apply-continuation k x) (boolean? x)))
+            (list #t 42 #f)))
+        42)
+      ($letrec ((acc ())
+                (env (get-current-environment)))
+        ($set! env acc
+          (cons (filter
+                  ($lambda (x)
+                    ($if (integer? x)
+                      ($let/cc k ($set! env k k) #t)
+                      #t))
+                  (list #t 0 #f))
+                acc))
+        ($if (=? (length acc) 3)
+          ($check equal?
+            acc
+            (list (list #t 0 #f) (list #t #f) (list #t 0 #f)))
+          (apply-continuation k (even? (length acc))))))
+
+    ($test-group error-handling
+        ((plan not-applicative not-list not-boolean))
+      ($test-group not-applicative
+          ((number 3))
+        ($check-error (filter 1 ()))
+        ($check-error (filter (unwrap integer?) (list 1 2 3)))
+        ($check-error (filter (list 1 2 3) integer?)))
+      ($test-group not-list
+          ((number 3))
+        ($check-error (filter integer? 1))
+        ($check-error (filter pair? pair?))
+        ($check-error (filter (list 1 2 3) integer?)))
+      ($test-group not-boolean
+          ((number 3))
+        ($check-error (filter list (list 1 2 3)))
+        ($check-error (filter list* (list 1 2 3)))
+        ($check-error (filter ($lambda (x) ()) (list #t #f))))))
+
+;;
 ;; assoc
 ;;
 
@@ -613,7 +715,8 @@
         ((unwrap list) (1 ()) (#f ()) ((1 3) ()))))
 
     ($test-group cyclic
-        ((number 3))
+        ((require-modules pair-mutation)
+         (number 3))
       ($define! pairs
         (cons (list 1 2)
               (cyclic-list (cons 2 3) (list () ()))))
@@ -651,7 +754,8 @@
            ((#f) #t)  ((x y) #t)  (((2 3) (4 4)) #f))))
 
     ($test-group cyclic
-        ((number 6))
+        ((require-modules pair-mutation)
+         (number 6))
       ($define! pairs
         (list* #t () (cyclic-list 1 -1)))
       (for-each
