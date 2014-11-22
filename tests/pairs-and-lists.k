@@ -772,4 +772,86 @@
       ($check-error (member? #t #f))
       ($check-error (member? assoc assoc))))
 
+;;
+;; finite-list?
+;;
+
+  ($test-group finite-list?
+      ((cite (kernel-report 6 3 8)
+             "returns true iff all its arguments are acyclic lists")
+       (plan acyclic cyclic error-handling))
+
+    ($test-group acyclic
+        ((number 15))
+      ($eval-table
+        ((finite-list? ())                        #t)
+        ((finite-list? (cons #t ()))              #t)
+        ((finite-list? (list 1 2 3))              #t)
+        ((finite-list? (list 1 2 3 4 5 6))        #t)
+        ((finite-list? #inert)                    #f)
+        ((finite-list? "xyz")                     #f)
+        ((finite-list? #f)                        #f)
+        ((finite-list? (get-current-environment)) #f)
+        ((finite-list? ((unwrap list) . nil))     #f)
+        ((finite-list? (cons 1 2))                #f)
+        ((finite-list? (list* 1 2 3 4))           #f)
+        ((finite-list?)                           #t)
+        ((finite-list? (list 1 2) (list 3 4))     #t)
+        ((finite-list? () () () () () () ())      #t)
+        ((finite-list? (list 1) 2 (list 3) 4)     #f)))
+
+    ($test-group cyclic
+        ((require-modules pair-mutation)
+         (number 4))
+      ($check equal? (finite-list? (cyclic-list 1)) #f)
+      ($check equal? (finite-list? (cyclic-list 2 3 4) 2) #f)
+      ($check equal? (finite-list? (list* 1 2 (cyclic-list 2 3))) #f)
+      ($check equal? (finite-list? (list 1 1 1 1 1) (cyclic-list 1 1)) #f))
+
+    ($test-group error-handling
+        ((number 2))
+      ($check-error (finite-list? . #inert))
+      ($check-error (finite-list? () . 1))))
+
+;;
+;; countable-list?
+;;
+
+  ($test-group countable-list?
+      ((cite (kernel-report 6 3 8)
+             "returns true iff all its arguments are lists")
+       (plan acyclic cyclic error-handling))
+
+    ($test-group acyclic
+        ((number 15))
+      ($eval-table
+        ((countable-list? ())                        #t)
+        ((countable-list? (cons #t ()))              #t)
+        ((countable-list? (list 1 2 3))              #t)
+        ((countable-list? (list 1 2 3 4 5 6))        #t)
+        ((countable-list? #inert)                    #f)
+        ((countable-list? "xyz")                     #f)
+        ((countable-list? #f)                        #f)
+        ((countable-list? (get-current-environment)) #f)
+        ((countable-list? ((unwrap list) . nil))     #f)
+        ((countable-list? (cons 1 2))                #f)
+        ((countable-list? (list* 1 2 3 4))           #f)
+        ((countable-list?)                           #t)
+        ((countable-list? (list 1 2) (list 3 4))     #t)
+        ((countable-list? () () () () () () ())      #t)
+        ((countable-list? (list 1) 2 (list 3) 4)     #f)))
+
+    ($test-group cyclic
+        ((require-modules pair-mutation)
+         (number 4))
+      ($check equal? (countable-list? (cyclic-list 1)) #t)
+      ($check equal? (countable-list? (cyclic-list 2 3 4) 2) #f)
+      ($check equal? (countable-list? (list* 1 2 (cyclic-list 2 3))) #t)
+      ($check equal? (countable-list? (list 1 1 1 1 1) (cyclic-list 1 1)) #t))
+
+    ($test-group error-handling
+        ((number 2))
+      ($check-error (countable-list? . #inert))
+      ($check-error (countable-list? () . 1))))
+
 )
