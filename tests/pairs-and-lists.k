@@ -854,4 +854,133 @@
       ($check-error (countable-list? . #inert))
       ($check-error (countable-list? () . 1))))
 
+;;
+;; reduce
+;;
+
+  ($test-group reduce
+      ((cite (kernel-report 6 3 10))
+       (plan empty acyclic cyclic calls dynamic-environment error-handling))
+
+    ($test-group empty
+        ((cite (kernel-report 6 3 10)
+               "If /list/ is empty, applicative reduce returns identity.")
+         (number 3))
+      ($eval-table
+        ((reduce () + 0)        0)
+        ((reduce () cons ())    ())
+        ((reduce () error list) list)))
+
+    ($test-group acyclic
+        ((cite (kernel-report 6 3 10)
+               "If /list/ is nonempty but acyclic, applicative reduce uses binary
+                operation /binary/ to merge all the elements of list into a single
+                object, using any associative grouping of the elements.")
+         (number 6))
+      ($eval-table
+        ((reduce (list 1 2 3 4 5 6 7 8) + 9)  36)
+        ((reduce (list -4 -3 -2 -1 2 3) * 9) 144)
+        ((reduce (list 10 20 -30 -10) max 0)  20)
+        ((reduce (list #t #t #f #t) and? #t)  #f)
+        ((reduce (list 1 2 3 4) boolean? #t)  #f)
+        ((reduce (list 1 2) environment? #f)  #f)))
+
+    ($test-group cyclic
+        ((cite (kernel-report 6 3 10)
+               "The elements of the cycle are passed, one at a time [...] as arguments
+                to unary applicative /precycle/; the finite, cyclic sequence of results
+                from precycle is reduced using binary applicative /incycle/; and the result
+                from reducing the cycle is passed as an argument to unary applicative
+                postcycle. Binary operation /binary/ is used to reduce the sequence
+                consisting of the elements of the acyclic prefix of list followed by the
+                result returned by postcycle.")
+         (require-modules pair-mutation)
+         (number 4))
+      ($define! cycle (cyclic-list 4 -5 6))
+      ($check equal? (reduce cycle append () list append car) 4)
+      ($check equal? (reduce cycle max 2 abs + list) (list 15))
+      ($check equal? (reduce cycle min 3 min min min) -5)
+      ($check equal? (reduce (list* 1 -2 3 cycle) + 0 abs + abs) 17))
+
+    ($test-group calls
+        ((plan cyclic acyclic))
+      ($define! state (make-environment))
+      ($define! names ((unwrap list) binary precycle incycle postcycle))
+      ($define! ops   (list          +      list*    +       list*))
+      (for-each
+        ($let ((env (get-current-environment)))
+          ($lambda (name op)
+            (set! env name
+              ($lambda args
+                (set! state name (+ 1 (eval name state)))
+                (apply op args)))))
+        names ops)
+      ($test-group acyclic
+          ((cite (kernel-report 6 3 10)
+                 "If /list/ is acyclic with length n >= 1, binary is called n - 1 times.")
+           (number 1))
+        (set! state names (list 0 0 0 0))
+        (reduce (list 1 2 3 4 5) binary 0 precycle incycle postcycle)
+        ($check equal? (apply (wrap list) names state) (list 4 0 0 0)))
+      ($test-group cyclic
+          ((cite (kernel-report 6 3 10)
+                 "If /list/ is cyclic with acyclic prefix length /a/ and cycle length /c/,
+                  binary is called /a/ times; precycle, /c/ times; incycle, /c/ - 1 times;
+                  and postcycle, once.")
+           (require-modules pair-mutation)
+           (number 1))
+        (set! state names (list 0 0 0 0))
+        (reduce (list* 1 2 (cyclic-list 3 4 5 6)) binary 0 precycle incycle postcycle)
+        ($check equal? (apply (wrap list) names state) (list 2 4 3 1))))
+
+    ($test-group dynamic-environment
+        ((cite (kernel-report 6 3 10)
+               "Each call to binary, precycle, incycle, or postcycle uses
+                the dynamic environment of the call to reduce.")
+         (plan cyclic acyclic))
+      ($define! state     (make-environment))
+      ($define! check-env ($lambda (e) ($check equal? e ($remote-eval env state))))
+      ($define! binary    (wrap ($vau (x y) e (check-env e) (+ x y))))
+      ($define! precycle  (wrap ($vau (x) e (check-env e) (* 10 x))))
+      ($define! incycle   binary)
+      ($define! postcycle precycle)
+      ($test-group acyclic
+          ((number 3))
+        ($define! e1 (get-current-environment))
+        ($set! state env e1)
+        ($check equal? 6
+                       (reduce (list 1 2 3) binary 0 precycle incycle postcycle)))
+      ($test-group cyclic
+          ((require-modules pair-mutation)
+           (number 7))
+        ($define! e2 (get-current-environment))
+        ($check (not? (equal? e2 ($remote-eval env state))))
+        ($set! state env e2)
+        ($check equal? 501
+                       (reduce (cons 1 (cyclic-list 2 3)) binary 0 precycle incycle postcycle))))
+
+    ($test-group error-handling
+        ((plan list applicatives cyclic))
+      ($test-group list 
+          ((cite (kernel-report 6 3 10)
+                 "/list/ should be a list")
+           (number 2))
+        ($check-error (reduce 5 max 0 max max max))
+        ($check-error (reduce max max max max max max)))
+      ($test-group applicatives
+          ((cite (kernel-report 6 3 10)
+                 "/binary/ should be an applicative [...] if the second call syntax
+                 is used, precycle, incycle, and postcycle should be applicatives.")
+           (number 2))
+        ($check-error (reduce (list 1 2) (unwrap list) 0))
+        ($check-error (reduce (list 1 2) list 0 (unwrap list) (unwrap list) (unwrap list))))
+      ($test-group cyclic
+          ((cite (kernel-report 6 3 10)
+                 "If the first call syntax is used, /list/ should be an acyclic
+                  list [...] If /list/ is cyclic, the second call syntax must be used.")
+           (require-modules pair-mutation)
+           (number 2))
+        ($check-error (reduce (cyclic-list 1) + 0))
+        ($check-error (reduce (cons 1 (cyclic-list 2 3)) + 0)))))
+
 )
