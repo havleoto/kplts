@@ -116,20 +116,20 @@
         ((=? (length args) 1)
           ($define! (arg) args)
           ($when (equivalent-eval? arg denv stdenv)
-            (write (list ($quote $check-true) arg))
+            (write-simple (list ($quote $check-true) arg))
             (newline)))
         ((=? (length args) 3)
           ($define! (eqv lhs rhs) args)
           ($when ($and? (equal? eqv ($quote equal?))
                     (equivalent-eval? lhs denv stdenv)
                     (equivalent-eval? rhs denv stdenv))
-            (write (list ($quote $check-equal) lhs rhs))
+            (write-simple (list ($quote $check-equal) lhs rhs))
             (newline))))))
 
   ($define! $check-error
     ($vau (arg) denv
       ($when (equivalent-eval? arg denv stdenv)
-        (write (list ($quote $check-error) arg))
+        (write-simple (list ($quote $check-error) arg))
         (newline)))))
 
 ;;
