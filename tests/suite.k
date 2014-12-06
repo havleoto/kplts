@@ -68,7 +68,9 @@
              ports))
     (load "continuations.k")
     (load "encapsulations.k")
-    (load "numbers.k"))
+    (load "numbers.k")
+    (load "keyed-dynamic-variables.k")
+    (load "keyed-static-variables.k"))
   ;;
   ;; Extensions [R7RS, klisp].
   ;;
