@@ -165,21 +165,6 @@
         $quote $sequence
         apply cons list))))
 
-  ($define! export-form
-    ($lambda (x)
-      ($cond
-        ((pair? x)
-          ($if (eq? (car x) $quote)
-            (export-quote x)
-            (cons (export-form (car x)) (export-form (cdr x)))))
-        ((combiner? x)
-          ($define! v (assoc x (access-uneval)))
-          ($if (pair? v) (cdr v) x))
-        ((environment? x)
-          ($quote (get-current-environment)))
-        (#t
-          x))))
-
   ($define! export-quote
     ($lambda (x)
       ($cond
@@ -192,12 +177,14 @@
           ($if (pair? v) (cdr v) x))
         ((environment? x)
           ($quote (get-current-environment)))
+        ((symbol? x)
+          (cons ($quote (unwrap list)) x))
         (#t
           x))))
 
   ($set! fuzz-env eval-protect
     ($lambda (form #ignore)
-      (write (list ($quote $check-error) (export-form form)))
+      (write (list (list ($quote wrap) ($quote $check-error)) (export-quote form)))
       (newline)
       (list #inert #inert)))
 
@@ -210,13 +197,15 @@
   ($set! parent-env $fuzz-applicative
     ($vau args denv
       ($define! (count f valid-ptree? . ptree-samples) args)
+      ($define! g (eval f denv))
       (bind-uneval
-        (append (list (cons (eval f denv) f)
-                      (cons (unwrap (eval f denv)) (list ($quote unwrap) f)))
+        (append (list (cons g f)
+                      (cons (unwrap g) (list ($quote unwrap) f)))
                 global-uneval)
         ($lambda ()
-          (eval (cons ($remote-eval $fuzz-applicative fuzz-env) args)
-                denv))))))
+          (apply (wrap ($remote-eval $fuzz-applicative fuzz-env))
+                 (list* count g valid-ptree? ptree-samples)
+                 denv))))))
 
 
 ;; ignore errors if some files are missing
