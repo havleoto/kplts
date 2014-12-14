@@ -153,6 +153,59 @@
             ($check-error (a2))))))))
 
   ($test-group interaction
-      ((plan apply-continuation guard-dynamic-extent))
+      ((plan extend-continuation guard-dynamic-extent))
 
-    "TODO"))
+    ($test-group extend-continuation
+        ((number 2))
+      ($define! (b a)
+        (make-keyed-dynamic-variable))
+      ($define! pass
+        ($lambda back
+          (apply-continuation back (a))))
+      ($define! go
+        ($lambda (there)
+          ($let/cc here
+            (apply-continuation there here))))
+      ($define! (k1 k2)
+        ($let ((state (make-kernel-standard-environment)))
+          (b 420 ($lambda () ($let/cc k1 ($set! state k1 k1))))
+          (b 314 ($lambda () ($let/cc k2 ($set! state k2 k2))))
+          ($remote-eval (list k1 k2) state)))
+      ($define! r1 (go (extend-continuation k1 pass)))
+      ($define! r2 (go (extend-continuation k2 pass)))
+      ($check equal? r1 420)
+      ($check equal? r2 314))
+
+    ($test-group guard-dynamic-extent
+        ((number 4))
+
+      ($define! (b a)
+        (make-keyed-dynamic-variable))
+
+      (b 123 ($lambda ()
+               (guard-dynamic-extent
+                 ()
+                 ($lambda ()
+                   (b 234
+                      ($lambda ()
+                        ($check equal? (a) 234)
+                        some-undefined-symbol)))
+                 (list (list root-continuation
+                             ($lambda (#ignore divert)
+                               ($check equal? (a) 123)
+                               (divert)))))))
+      ($let/cc done
+        (b 345 ($lambda ()
+                 ($define! re-enter
+                   (guard-dynamic-extent
+                     (list (list root-continuation
+                                 ($lambda (#ignore divert)
+                                   ($check equal? (a) 345)
+                                   (apply-continuation done #inert))))
+                     ($lambda ()
+                       (b 456
+                          ($lambda ()
+                            ($check equal? (a) 456)
+                            ($let/cc here here))))
+                     ()))
+                 (apply-continuation re-enter ())))))))
