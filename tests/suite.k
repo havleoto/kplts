@@ -69,6 +69,7 @@
     (load "continuations.k")
     (load "encapsulations.k")
     (load "numbers.k")
+    (load "promises.k")
     (load "keyed-dynamic-variables.k")
     (load "keyed-static-variables.k"))
   ;;
