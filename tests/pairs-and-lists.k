@@ -481,7 +481,8 @@
         ($check-error (append 1 2))
         ($check-error (append (list 1 2) $if (list 3 4))))
       ($test-group cyclic-list
-          ((number 3))
+          ((require-modules pair-mutation)
+           (number 3))
         ($check-error (append (cyclic-list 1) ()))
         ($check-error (append (list 1 2) (cyclic-list 2 3) 5))
         ($check-error (append (cyclic-list #t) (cyclic-list #f))))))
