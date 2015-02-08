@@ -520,4 +520,85 @@
           close-input-file close-output-file
           read write
           call-with-input-file call-with-output-file
-          load get-module)))))
+          load get-module))))
+
+;;
+;; syntactically valid and invalid binding forms
+;;
+
+  ($define! valid-bindings
+    ((unwrap list)
+      ()
+      ((()        ()))
+      ((#ignore   (+ 1 2)))
+      ((x         (list 2)))
+      ((y         ((unwrap list) . y)))
+      (((x . y)   (list 1)))
+      (((x y . z) (list 1 2)))
+      (((x y z)   (list (list 1 2) 3 (list 4 5))))
+      ((((x y))   (list (list 1 2))))
+      (((x (z) y) (list 1 (list 2) (list 3 4))))
+      (((((())))  (list (list (list ())))))))
+
+  ($define! invalid-bindings
+    ((unwrap list)
+      (() ())
+      (() () ())
+      ((()             () ()))
+      ((x              1 2 3))
+      ((#inert         #inert))
+      ((1              2))
+      ((x 3            y 4))
+      (((x x)          (list 5 6)))
+      (((x y)          (list 7)))
+      (((x y x y)      (list 8 9 10 11)))
+      ((((x y) (x y))  (list (list 12 13) (list 12 13))))
+      (((x y #f)       (list #f #f #f)))))
+
+;;
+;; $bindings->environment
+;;
+
+  ($test-group $bindings->environment
+      ((cite (kernel-report 6 7 10))
+       (plan equivalent-to-let error-handling))
+
+    ($test-group equivalent-to-let
+        ((cite (kernel-report 6 7 10)
+               "The expression ($bindings->environment . <bindings>)
+                is equivalent to ($let-redirect (make-environment) <bindings>
+                                                (get-current-environment))")
+         (number 31))
+      ($define! $equivalent-in-symbol
+        ($vau (x1 x2 s) denv
+          ($define! e1 (eval x1 denv))
+          ($define! e2 (eval x1 denv))
+          ($check equal? (binds? e1 s) (binds? e1 s))
+          ($when ($or? (binds? e1 s) (binds? e2 s))
+            ($check equal? (eval s e1) (eval s e2)))))
+      (for-each
+        ($lambda (bindings)
+          ($define! a
+            (cons $bindings->environment bindings))
+          ($define! b
+            (list $let-redirect
+                  (list make-environment)
+                  bindings
+                  (list get-current-environment)))
+          ($define! e0 (make-kernel-standard-environment))
+          ($set! e0 (x y z) (list 0 0 0))
+          ($define! (r1 e1) (eval-protect a e0))
+          ($define! (r2 e2) (eval-protect b e0))
+          ($equivalent-in-symbol e1 e2 x)
+          ($equivalent-in-symbol e1 e2 z))
+        valid-bindings))
+
+    ($test-group error-handling
+        ((number 12))
+      (for-each
+        ($lambda (bindings)
+          ($check-error
+            (apply (wrap $bindings->environment)
+                   bindings
+                   (make-kernel-standard-environment))))
+        invalid-bindings))))
