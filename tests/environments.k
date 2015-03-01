@@ -556,6 +556,97 @@
       (((x y #f)       (list #f #f #f)))))
 
 ;;
+;; $let*
+;;
+
+  ($test-group $let*
+      ((cite (kernel-report 6 7 4))
+       (plan left-to-right previous-bindings first-in-dynamic-environment
+             repeat-symbols error-handling))
+
+    ($test-group left-to-right
+        ((cite (kernel-report 6 7 4)
+               "the binding expressions are guaranteed to be evaluated from left to right")
+         (number 1))
+      ($define! inc!
+        ($letrec ((my (get-current-environment))
+                  (n   0))
+          ($lambda ()
+            ($set! my n (+ n 1))
+            n)))
+      ($check equal?
+              ($let* ((a (inc!)) (b (inc!)) (c (inc!)) (d (inc!)))
+                (list a b c d))
+              (list 1 2 3 4)))
+
+    ($test-group previous-bindings
+        ((cite (kernel-report 6 7 4)
+               "each of these evaluations has access to the bindings
+                of previous evaluations")
+         (number 1))
+      ($define! a 1)
+      ($define! b 2)
+      ($define! c 3)
+      ($check equal?
+              ($let* ((a (+ 1 c)) (b (+ 1 a)) (c (+ 1 a b)))
+                (list a b c))
+              (list 4 5 10)))
+
+    ($test-group first-in-dynamic-environment
+        ((cite (kernel-report 6 7 4)
+               "the first binding expression is evaluated in the dynamic environment")
+         (number 1))
+      ($check equal?
+              ($let* ((e1 (get-current-environment))
+                      (e2 (get-current-environment)))
+                e1)
+              (get-current-environment)))
+
+    ($test-group repeat-symbols
+        ((cite (kernel-report 6 7 4)
+               "there is nothing to prevent the same symbol from
+                occurring in more than one formals")
+         (number 1))
+      ($check equal?
+              ($let* (((x y) (list 1 2))
+                      ((y z) (list 3 4))
+                      ((z x) (list 5 6)))
+                (list x y z))
+              (list 6 3 5)))
+
+    ($test-group error-handling
+        ((plan pairs finite-bindings))
+
+      ($test-group pairs
+          ((cite (kernel-report 6 7 4)
+                 "list of formal-parameter-tree/expression pairings")
+           (number 17))
+        ($check-error ($let* #t))
+        ($check-error ($let* 2 3))
+        ($check-error ($let* #inert #ignore))
+        ($check-error ($let* ((#t #t)) #t))
+        ($check-error ($let* ((a 1 2)) #f))
+        (for-each
+          ($lambda (b)
+            ($check-error (eval (list $let* b #inert)
+                                (make-kernel-standard-environment))))
+          invalid-bindings))
+
+      ($test-group finite-bindings
+          ((cite (kernel-report 6 7 4)
+                 "bindings should be a finite list")
+           (require-modules pair-mutation)
+           (number 3))
+        ($define! b1 (cyclic-list ($quote (a 1)) ($quote (b 2))))
+        ($define! b2 (cyclic-list ($quote (c 3))))
+        ($define! b3 (list* ($quote (d 4)) ($quote (e 5)) b2))
+        (eval (list $sequence
+                    (list $check-error (list $let* b1 6))
+                    (list $check-error (list $let* b2 7))
+                    (list $check-error (list $let* b3 8)))
+              (make-kernel-standard-environment)))))
+
+;;
 ;; $bindings->environment
 ;;
 
